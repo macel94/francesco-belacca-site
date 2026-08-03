@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: francesco-site
+  labels:
+    app: francesco-site
+    belacca.com/project: portfolio
+spec:
+  selector:
+    app: francesco-site
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  type: ClusterIP

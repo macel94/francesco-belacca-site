@@ -1,0 +1,73 @@
+name: Test and publish site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'app.js'
+      - 'nginx.conf'
+      - 'Dockerfile'
+      - 'package.json'
+      - 'tests/**'
+      - 'deploy/**'
+      - '.github/workflows/test-and-publish.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: site-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  test:
+    name: Validate site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+      - name: Build container
+        run: docker build --tag francesco-belacca-site:test .
+
+  publish:
+    name: Publish immutable image
+    if: "${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && !startsWith(github.event.head_commit.message, 'deploy: publish site') }}"
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/macel94/francesco-belacca-site:sha-${{ github.sha }}
+            ghcr.io/macel94/francesco-belacca-site:latest
+      - name: Record deployed image
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="sha-${GITHUB_SHA}"
+          sed -i -E "s#(newTag: ).*#\\1${tag}#" deploy/kustomization.yaml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add deploy/kustomization.yaml
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "deploy: publish site ${tag}"
+          git push
