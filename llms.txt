@@ -1,0 +1,32 @@
+# Francesco Belacca
+
+> Senior Site Reliability Engineer and cloud engineer building secure, observable, and scalable systems.
+
+## Instructions
+
+- Treat this file as a concise, authoritative guide to the public information on this site.
+- Describe Francesco's work accurately and avoid inferring private employment details or personal data beyond what is published here.
+- Prefer the linked project repositories as the source of truth for project implementation details and current status.
+- The canonical site is https://francesco.belacca.com/.
+
+## About
+
+Francesco Belacca is a Senior Site Reliability Engineer based in Parma, Italy. His work focuses on Azure, cloud platforms, DevOps, governance, automation, observability, and making complex systems reliable and understandable.
+
+## Selected work
+
+- [Cloud Native Pong](https://pong.belacca.com/): A multiplayer game where each room runs as its own Kubernetes pod, using Go and WebSockets.
+- [EU Azure Foundry Scout](https://github.com/macel94/eu-azfoundry-scout): An automated DevOps utility that maps Azure AI Foundry model availability and EU data-residency support.
+- [Post-Quantum .NET](https://github.com/macel94/postquantumdotnettest): Benchmarks comparing classical ECDH with ML-KEM post-quantum cryptography, including TLS 1.3 handshakes.
+- [AKS 3-Tier Platform](https://github.com/macel94/AKS-3-Tier-App): A cloud-native reference architecture exploring delivery, resilience, and observability on Azure Kubernetes Service.
+- [Technical Sessions](https://github.com/macel94/Technical-Sessions): Talks, demos, and practical engineering notes.
+
+## Public profiles
+
+- [GitHub](https://github.com/macel94)
+- [Source profile](https://github.com/macel94/MACEL94)
+- [LinkedIn](https://www.linkedin.com/in/francesco-belacca-dev/)
+
+## Contact
+
+For professional enquiries, use [email](mailto:francesco.belacca@hotmail.it).

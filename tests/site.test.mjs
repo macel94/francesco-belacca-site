@@ -24,6 +24,37 @@ test('navigation targets exist and external links are protected', async () => {
   externalTargets.forEach((attrs) => assert.match(attrs, /rel="noreferrer"/));
 });
 
+test('work section features the requested projects', async () => {
+  const html = await read('index.html');
+  assert.match(html, /href="https:\/\/github\.com\/macel94\/eu-azfoundry-scout"/);
+  assert.match(html, /EU Azure Foundry Scout/);
+  assert.match(html, /href="https:\/\/github\.com\/macel94\/postquantumdotnettest"/);
+  assert.match(html, /Post-Quantum \.NET/);
+  assert.doesNotMatch(html, /github\.com\/macel94\/azcockpit/);
+  assert.doesNotMatch(html, /Azure Cockpit/);
+});
+
+test('site discovery assets are linked and shipped', async () => {
+  const html = await read('index.html');
+  const dockerfile = await read('Dockerfile');
+  const manifest = await read('site.webmanifest');
+  const robots = await read('robots.txt');
+  const llms = await read('llms.txt');
+  const sitemap = await read('sitemap.xml');
+  assert.match(html, /href="\/favicon\.svg" type="image\/svg\+xml"/);
+  assert.match(html, /href="\/favicon\.ico" type="image\/x-icon"/);
+  assert.match(html, /href="\/site\.webmanifest"/);
+  assert.match(dockerfile, /favicon\.svg favicon\.ico site\.webmanifest robots\.txt llms\.txt sitemap\.xml/);
+  assert.match(manifest, /"start_url": "\/"/);
+  assert.match(manifest, /"theme_color": "#070a0e"/);
+  assert.match(robots, /Allow: \/\n/);
+  assert.match(robots, /Sitemap: https:\/\/francesco\.belacca\.com\/sitemap\.xml/);
+  assert.match(llms, /^# Francesco Belacca/m);
+  assert.match(llms, /https:\/\/github\.com\/macel94\/eu-azfoundry-scout/);
+  assert.match(llms, /https:\/\/github\.com\/macel94\/postquantumdotnettest/);
+  assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/<\/loc>/);
+});
+
 test('animation layer includes a reduced-motion path', async () => {
   const css = await read('styles.css');
   const js = await read('app.js');
