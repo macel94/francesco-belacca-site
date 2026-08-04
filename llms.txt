@@ -15,6 +15,7 @@ Francesco Belacca is a Senior Site Reliability Engineer based in Parma, Italy. H
 
 ## Selected work
 
+- [Belacca Platform](https://github.com/macel94/belacca-platform): A GitOps workspace orchestrating the public platform across application repositories, Kubernetes manifests, and Flux-driven delivery.
 - [Cloud Native Pong](https://pong.belacca.com/): A multiplayer game where each room runs as its own Kubernetes pod, using Go and WebSockets.
 - [EU Azure Foundry Scout](https://github.com/macel94/eu-azfoundry-scout): An automated DevOps utility that maps Azure AI Foundry model availability and EU data-residency support.
 - [Post-Quantum .NET](https://github.com/macel94/postquantumdotnettest): Benchmarks comparing classical ECDH with ML-KEM post-quantum cryptography, including TLS 1.3 handshakes.

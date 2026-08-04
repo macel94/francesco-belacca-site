@@ -26,6 +26,9 @@ test('navigation targets exist and external links are protected', async () => {
 
 test('work section features the requested projects', async () => {
   const html = await read('index.html');
+  assert.match(html, /href="https:\/\/github\.com\/macel94\/belacca-platform"/);
+  assert.match(html, /Belacca Platform/);
+  assert.match(html, /A GitOps workspace orchestrating the public platform/);
   assert.match(html, /href="https:\/\/github\.com\/macel94\/eu-azfoundry-scout"/);
   assert.match(html, /EU Azure Foundry Scout/);
   assert.match(html, /href="https:\/\/github\.com\/macel94\/postquantumdotnettest"/);
