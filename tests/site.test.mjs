@@ -235,17 +235,14 @@ test('container serves a health endpoint with hardened headers and cache behavio
 });
 
 test('AI assistance and status boundaries are documented', async () => {
-  const rootReadme = await read(resolve(root, '..', 'README.md'));
-  const boundary = await read(resolve(root, '..', 'docs/incident-evidence.md'));
-  assert.match(rootReadme, /read-only/);
-  assert.match(rootReadme, /human approval/);
-  assert.match(rootReadme, /GitOps-only/);
-  assert.match(boundary, /Read-only/);
-  assert.match(boundary, /Evidence-linked/);
-  assert.match(boundary, /Human approval/);
-  assert.match(boundary, /GitOps-only changes/);
-  assert.match(boundary, /never requests Kubernetes Secrets/);
-  assert.match(boundary, /never runs/);
+  const readme = await read('README.md');
+  assert.match(readme, /read-only/);
+  assert.match(readme, /evidence-linked/);
+  assert.match(readme, /human approval/);
+  assert.match(readme, /GitOps-only/);
+  assert.match(readme, /does not collect\s+Kubernetes evidence/);
+  assert.match(readme, /request Secrets/);
+  assert.match(readme, /mutate a cluster/);
 });
 
 test('redirect boundary is explicit and cannot leak into the static server', async () => {

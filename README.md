@@ -102,6 +102,17 @@ Local dry runs require no credentials or external endpoint:
 ./scripts/synthetic-check.sh --dry-run
 ```
 
+### Evidence and AI-assistance boundary
+
+The public status page consumes only the sanitized `status.json` contract. It
+is not a cluster-to-browser status API, and the checked-in default remains
+`unknown` / `not_configured` until an external publisher supplies reviewed,
+timestamped evidence. Any AI-assisted summary of operational evidence must be
+read-only, evidence-linked, and subject to human approval. Production changes
+are GitOps-only: they must be proposed, reviewed, tested, and applied through
+the appropriate repository and Flux path. This site repository does not collect
+Kubernetes evidence, request Secrets, or mutate a cluster.
+
 The canonical public URL is [`https://francesco.belacca.com`](https://francesco.belacca.com).
 The deployment and shared host routing live in
 [`macel94/belacca-gitops`](https://github.com/macel94/belacca-gitops).
