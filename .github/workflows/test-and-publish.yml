@@ -7,6 +7,8 @@ on:
       - 'index.html'
       - 'styles.css'
       - 'app.js'
+      - 'count.js'
+      - 'privacy.html'
       - 'favicon.svg'
       - 'favicon.ico'
       - 'site.webmanifest'

@@ -19,6 +19,27 @@ test('site has a semantic document shell and canonical metadata', async () => {
   assert.match(html, /mailto:francesco\.belacca@hotmail\.it/);
 });
 
+test('analytics stays first-party and cookie-free', async () => {
+  const html = await read('index.html');
+  const privacy = await read('privacy.html');
+  const tracker = await read('count.js');
+  const nginx = await read('nginx.conf');
+  assert.match(html, /data-goatcounter="\/count" async src="\/count\.js"/);
+  assert.match(html, /href="\/privacy\.html"/);
+  assert.match(privacy, /self-hosted analytics/);
+  assert.match(privacy, /does not use advertising trackers/);
+  assert.match(tracker, /GoatCounter/);
+  assert.doesNotMatch(tracker, /gc\.zgo\.at|zgo\.at\/count/);
+  assert.match(nginx, /location = \/count \{/);
+  assert.match(nginx, /resolver 10\.43\.0\.10 valid=30s;/);
+  assert.match(nginx, /set \$goatcounter_upstream goatcounter\.analytics\.svc\.cluster\.local;/);
+  assert.match(nginx, /proxy_pass http:\/\/\$goatcounter_upstream;/);
+  assert.match(nginx, /proxy_set_header Host stats\.belacca\.com;/);
+  assert.match(nginx, /proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;/);
+  assert.match(nginx, /proxy_set_header X-Real-IP \$remote_addr;/);
+  assert.match(nginx, /location = \/count\.js \{/);
+});
+
 test('navigation targets exist and external links are protected', async () => {
   const html = await read('index.html');
   for (const id of ['about', 'work', 'stack', 'contact']) assert.match(html, new RegExp(`id="${id}"`));
@@ -47,10 +68,11 @@ test('site discovery assets are linked and shipped', async () => {
   const robots = await read('robots.txt');
   const llms = await read('llms.txt');
   const sitemap = await read('sitemap.xml');
+  const privacy = await read('privacy.html');
   assert.match(html, /href="\/favicon\.svg" type="image\/svg\+xml"/);
   assert.match(html, /href="\/favicon\.ico" type="image\/x-icon"/);
   assert.match(html, /href="\/site\.webmanifest"/);
-  assert.match(dockerfile, /favicon\.svg favicon\.ico site\.webmanifest robots\.txt llms\.txt sitemap\.xml/);
+  assert.match(dockerfile, /index\.html privacy\.html styles\.css app\.js count\.js favicon\.svg favicon\.ico site\.webmanifest robots\.txt llms\.txt sitemap\.xml/);
   assert.match(dockerfile, /ARG BUILD_SHA=dev/);
   assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
@@ -61,6 +83,7 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(llms, /https:\/\/github\.com\/macel94\/eu-azfoundry-scout/);
   assert.match(llms, /https:\/\/github\.com\/macel94\/postquantumdotnettest/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/privacy\.html<\/loc>/);
 });
 
 test('navigation remains usable on keyboard and compact screens', async () => {

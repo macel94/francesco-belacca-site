@@ -32,7 +32,8 @@ curl -fsS http://localhost:8080/health
 - CSS grid, terminal panels, telemetry cues, and restrained motion for a
   professional but slightly hacker/matrix character.
 - Responsive layout and a complete `prefers-reduced-motion` path.
-- No third-party fonts, trackers, runtime APIs, or client-side framework.
+- No third-party fonts, analytics vendors, runtime APIs, or client-side framework.
+- Self-hosted, cookie-free visitor analytics are served through the same-origin `/count` endpoint; see [`privacy.html`](privacy.html). The private dashboard is at `https://stats.belacca.com`.
 
 ## Delivery
 
