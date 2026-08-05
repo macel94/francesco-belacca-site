@@ -58,12 +58,26 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/<\/loc>/);
 });
 
+test('navigation remains usable on keyboard and compact screens', async () => {
+  const html = await read('index.html');
+  const css = await read('styles.css');
+  const js = await read('app.js');
+  assert.match(html, /class="skip-link" href="#top"/);
+  assert.match(html, /class="mobile-menu"/);
+  assert.match(html, /aria-label="Mobile navigation"/);
+  assert.match(html, /aria-label="Open to signal"/);
+  assert.match(css, /:where\(a, summary\):focus-visible/);
+  assert.match(css, /@media \(max-width: 390px\)/);
+  assert.match(js, /removeAttribute\('open'\)/);
+});
+
 test('animation layer includes a reduced-motion path', async () => {
   const css = await read('styles.css');
   const js = await read('app.js');
   assert.match(css, /prefers-reduced-motion/);
   assert.match(js, /prefers-reduced-motion/);
   assert.match(js, /IntersectionObserver/);
+  assert.match(js, /visibilitychange/);
 });
 
 test('container serves a health endpoint with a hardened nginx config', async () => {

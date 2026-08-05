@@ -1,4 +1,7 @@
 (() => {
+  document.documentElement.classList.add('js');
+  document.querySelector('main')?.setAttribute('tabindex', '-1');
+
   const year = document.querySelector('#year');
   if (year) year.textContent = String(new Date().getFullYear());
 
@@ -16,6 +19,11 @@
     }, { threshold: 0.12 });
     revealItems.forEach((item) => observer.observe(item));
   }
+
+  const mobileMenu = document.querySelector('.mobile-menu');
+  mobileMenu?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => mobileMenu.removeAttribute('open'));
+  });
 
   const canvas = document.querySelector('#matrix');
   if (!canvas || prefersReducedMotion) return;
@@ -57,6 +65,14 @@
     frame = window.requestAnimationFrame(draw);
   };
   window.addEventListener('resize', resize, { passive: true });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      window.cancelAnimationFrame(frame);
+      frame = 0;
+    } else if (!frame) {
+      frame = window.requestAnimationFrame(draw);
+    }
+  });
   resize();
   frame = window.requestAnimationFrame(draw);
   window.addEventListener('pagehide', () => window.cancelAnimationFrame(frame), { once: true });
