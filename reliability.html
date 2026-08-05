@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#070a0e" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="A public, bounded view of the Belacca platform's current architecture, delivery, security boundaries, and reliability practice." />
+    <meta property="og:title" content="Reliability / Systems — Francesco Belacca" />
+    <meta property="og:description" content="The current architecture, GitOps delivery path, reliability method, and known limitations behind the Belacca platform." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://francesco.belacca.com/reliability.html" />
+    <link rel="canonical" href="https://francesco.belacca.com/reliability.html" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="alternate icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script data-goatcounter="/count" async src="/count.js"></script>
+    <script src="/app.js" defer></script>
+    <title>Reliability / Systems — Francesco Belacca</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#systems-main">skip to content <span aria-hidden="true">↘</span></a>
+    <canvas class="matrix" id="matrix" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="shell reliability-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="Francesco Belacca home">
+          <span class="brand-mark" aria-hidden="true">FB</span>
+          <span class="brand-copy"><strong>francesco</strong><small>.belacca</small></span>
+        </a>
+        <nav class="nav" aria-label="Primary navigation">
+          <a href="/">home</a>
+          <a href="#architecture">architecture</a>
+          <a href="#delivery">delivery</a>
+          <a href="#security">security</a>
+          <a href="#practice">practice</a>
+          <a href="#resilience">resilience</a>
+          <a href="/status.html">status</a>
+        </nav>
+        <details class="mobile-menu">
+          <summary><span class="menu-glyph" aria-hidden="true"></span><span>menu</span></summary>
+          <nav class="mobile-nav" aria-label="Mobile navigation">
+            <a href="/">home</a>
+            <a href="#architecture">architecture</a>
+            <a href="#delivery">delivery</a>
+            <a href="#security">security</a>
+            <a href="#practice">practice</a>
+            <a href="#resilience">resilience</a>
+            <a href="/status.html">status</a>
+          </nav>
+        </details>
+        <div class="header-right">
+          <span class="build-version" aria-label="Build commit __BUILD_SHA__" title="Build commit __BUILD_SHA__">build <code>__BUILD_SHA_SHORT__</code></span>
+          <a class="status-pill" href="mailto:francesco.belacca@hotmail.it" aria-label="Open to signal"><span class="status-dot"></span><span class="status-label">open to signal</span></a>
+        </div>
+      </header>
+
+      <main id="systems-main" tabindex="-1">
+        <section class="reliability-hero" aria-labelledby="systems-title">
+          <div class="reliability-hero-copy reveal">
+            <p class="eyebrow"><span class="prompt">&gt;_</span> reliability / systems notes <span class="cursor" aria-hidden="true"></span></p>
+            <h1 id="systems-title">Reliability,<br /><em>with receipts.</em></h1>
+            <p class="hero-lede">A public, deliberately bounded view of how the Belacca platform is built, delivered, protected, and improved.</p>
+            <p class="reliability-disclaimer"><strong>Current state:</strong> this is an architecture note, not a live status page. Automated SLO telemetry, off-cluster backups, and an externally generated incident surface are <mark>not deployed yet</mark>.</p>
+          </div>
+          <aside class="metadata-card reveal reveal-delay-1" aria-labelledby="metadata-title">
+            <div class="console-top"><span id="metadata-title">release://evidence</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
+            <dl class="metadata-list">
+              <div><dt>site build</dt><dd><code>__BUILD_SHA_SHORT__</code><small>image source revision</small></dd></div>
+              <div><dt>source</dt><dd><code>main</code><small>francesco-belacca-site</small></dd></div>
+              <div><dt>delivery</dt><dd>GitHub Actions → GHCR → Flux<small>immutable SHA tag recorded in Git</small></dd></div>
+              <div><dt>reconcile</dt><dd>1 min / 10 min<small>source poll / application sync</small></dd></div>
+            </dl>
+            <p class="metadata-note">A short commit identifier describes the build. It is not an availability measurement.</p>
+          </aside>
+        </section>
+
+        <section class="content-section reliability-section" id="architecture" aria-labelledby="architecture-title">
+          <div class="section-heading reveal"><span class="section-index">01</span><h2 id="architecture-title">The current<br /><em>shape.</em></h2><p class="heading-note">Small, explicit boundaries are easier to reason about than a diagram that promises everything.</p></div>
+          <div class="architecture-flow" role="group" aria-label="Current request and delivery boundaries">
+            <article class="flow-card reveal"><span class="flow-index">01 / EDGE</span><h3>HTTPS edge</h3><p>Traefik terminates public HTTPS, redirects HTTP, and routes by hostname. The portfolio and Pong have separate public routes.</p><span class="flow-code">visitor → edge</span></article>
+            <div class="flow-connector" aria-hidden="true">→</div>
+            <article class="flow-card reveal reveal-delay-1"><span class="flow-index">02 / PORTFOLIO</span><h3>Static site</h3><p>Two NGINX-backed site replicas serve HTML, CSS, JavaScript, and discovery assets. <code>/health</code> is the probe endpoint.</p><span class="flow-code">edge → site service</span></article>
+            <div class="flow-connector" aria-hidden="true">→</div>
+            <article class="flow-card reveal reveal-delay-2"><span class="flow-index">03 / PONG</span><h3>Game path</h3><p>Pong routes through a gateway to its static frontend and Go lobby API. A room receives its own Kubernetes Pod for the live game.</p><span class="flow-code">edge → gateway → room</span></article>
+          </div>
+          <div class="systems-grid">
+            <article class="system-card reveal"><span class="flow-index">portfolio / stateless</span><h3>Simple by default</h3><p>The portfolio is a static application. Its only runtime request is the same-origin analytics proxy; there is no CMS, browser-to-backend application API, login, or client-side framework.</p><div class="system-tags"><span>NGINX</span><span>2 replicas</span><span>/health</span></div></article>
+            <article class="system-card reveal reveal-delay-1"><span class="flow-index">pong / stateful boundary</span><h3>One writer on purpose</h3><p>The Pong lobby uses one API replica because its room state lives in single-writer SQLite on persistent storage. That is a known availability and scaling boundary, not hidden magic.</p><div class="system-tags"><span>Go</span><span>SQLite</span><span>RWO storage</span></div></article>
+            <article class="system-card reveal reveal-delay-2"><span class="flow-index">rooms / bounded runtime</span><h3>Ephemeral game Pods</h3><p>Each game room is represented by a dedicated Pod and Service with resource limits and a deadline. Waiting, finished, failed, and orphaned rooms are cleaned by the lobby.</p><div class="system-tags"><span>WebSockets</span><span>per-room Pod</span><span>cleanup</span></div></article>
+            <article class="system-card reveal reveal-delay-3"><span class="flow-index">analytics / first party</span><h3>Useful, not invasive</h3><p>Visitor analytics are sent through <code>/count</code> to the self-hosted GoatCounter service. The browser does not contact an analytics vendor directly, and the dashboard is separate from the public site.</p><div class="system-tags"><span>same origin</span><span>cookie-free</span><span>aggregate data</span></div></article>
+          </div>
+        </section>
+
+        <section class="content-section reliability-section" id="delivery" aria-labelledby="delivery-title">
+          <div class="section-heading reveal"><span class="section-index">02</span><h2 id="delivery-title">Changes travel<br /><em>as evidence.</em></h2><p class="heading-note">The desired production action is a reviewed change, not an improvised shell session.</p></div>
+          <div class="delivery-layout">
+            <ol class="delivery-steps reveal" aria-label="GitOps delivery sequence">
+              <li><span class="step-number">01</span><div><h3>Commit</h3><p>A change lands in the application repository and is reviewed as source.</p></div></li>
+              <li><span class="step-number">02</span><div><h3>Test and build</h3><p>GitHub Actions runs the site tests, builds the NGINX image, and publishes a commit-addressed GHCR tag.</p></div></li>
+              <li><span class="step-number">03</span><div><h3>Record</h3><p>The workflow writes the immutable SHA tag to the deployment Kustomization, keeping the intended release in Git.</p></div></li>
+              <li><span class="step-number">04</span><div><h3>Reconcile</h3><p>Flux watches the application repository and applies the site deployment on its configured reconciliation interval.</p></div></li>
+              <li><span class="step-number">05</span><div><h3>Rollback</h3><p>The documented rollback is a reviewed Git revert followed by reconciliation. Published images now carry SBOM and provenance attestations; digest signing is a separate manual step, and no admission or Flux verification is configured.</p></div></li>
+            </ol>
+            <aside class="boundary-card reveal reveal-delay-1" aria-labelledby="delivery-boundary-title">
+              <span class="flow-index">delivery boundary</span>
+              <h3 id="delivery-boundary-title">What this does not mean</h3>
+              <ul>
+                <li>A green build is not proof of live availability.</li>
+                <li>Flux health is not a user-journey SLO.</li>
+                <li>SHA tags identify source; they do not attest to a signed supply chain.</li>
+                <li>The status shown here is generated at image build time, not from the cluster.</li>
+              </ul>
+            </aside>
+          </div>
+        </section>
+
+        <section class="content-section reliability-section" id="security" aria-labelledby="security-title">
+          <div class="section-heading reveal"><span class="section-index">03</span><h2 id="security-title">Boundaries<br /><em>before bravado.</em></h2><p class="heading-note">The public surface says what is protected without turning an operational map into a treasure map.</p></div>
+          <div class="security-grid">
+            <article class="security-card reveal"><span class="flow-index">public surface</span><h3>Browser to site</h3><p>The site is served over the TLS route and has NGINX security headers for content type sniffing, framing, referrers, permissions, and content policy. The CSP keeps scripts, styles, connections, and forms on the same origin.</p></article>
+            <article class="security-card reveal reveal-delay-1"><span class="flow-index">private control</span><h3>Operations stay separate</h3><p>The Kubernetes dashboard is a separately routed, authenticated surface with read-only access. It is not embedded in this site, and no credentials, tokens, or cluster control plane are shipped to visitors.</p></article>
+            <article class="security-card reveal reveal-delay-2"><span class="flow-index">internal callbacks</span><h3>Room lifecycle stays internal</h3><p>Pong room lifecycle callbacks are addressed through the internal application service rather than the public gateway. Public WebSocket traffic reaches the game path; it does not expose the control callback.</p></article>
+            <article class="security-card reveal reveal-delay-3"><span class="flow-index">honest gap</span><h3>Controls still to add</h3><p>Published images now receive SBOM and provenance attestations, and a separate manual workflow can sign an immutable digest. Default-deny network policy, automatic signature/provenance verification at reconciliation, and a mandatory vulnerability gate are not configured. They must not be inferred from the current headers or GitOps flow.</p></article>
+          </div>
+        </section>
+
+        <section class="content-section reliability-section" id="practice" aria-labelledby="practice-title">
+          <div class="section-heading reveal"><span class="section-index">04</span><h2 id="practice-title">Measure what<br /><em>users feel.</em></h2><p class="heading-note">Reliability is a feedback loop: journey → signal → objective → budget → evidence → recovery.</p></div>
+          <div class="practice-layout">
+            <article class="method-card reveal" aria-labelledby="method-title">
+              <span class="flow-index">slo method / proposed</span>
+              <h3 id="method-title">The loop</h3>
+              <ol class="method-list">
+                <li><strong>Journey</strong><span>Define the user action that matters.</span></li>
+                <li><strong>SLI</strong><span>Count good and total events at the boundary.</span></li>
+                <li><strong>SLO</strong><span>Agree a target and time window with stakeholders.</span></li>
+                <li><strong>Budget</strong><span>Use missed reliability as a delivery trade-off.</span></li>
+                <li><strong>Evidence</strong><span>Connect alerts, deployments, and incident notes.</span></li>
+              </ol>
+            </article>
+            <article class="candidate-card reveal reveal-delay-1" aria-labelledby="candidate-title">
+              <span class="flow-index">candidate signals / not live</span>
+              <h3 id="candidate-title">A sensible first cut</h3>
+              <dl class="candidate-list">
+                <div><dt>portfolio</dt><dd>Successful external HTTPS checks for the homepage and <code>/health</code>.</dd></div>
+                <div><dt>Pong lobby</dt><dd>Successful create and join journeys, followed by an accepted WebSocket session.</dd></div>
+                <div><dt>delivery</dt><dd>Flux source and application reconciliation health as an operational diagnostic.</dd></div>
+              </dl>
+              <p class="planned-note"><strong>Not deployed:</strong> there is currently no Prometheus-compatible application metric layer, SLO recording rule, burn-rate alert, or external monitor feeding this page. Targets, windows, owners, and paging policy remain to be agreed.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-section reliability-section limitations" id="resilience" aria-labelledby="resilience-title">
+          <div class="section-heading reveal"><span class="section-index">05</span><h2 id="resilience-title">Recovery has<br /><em>limits.</em></h2><p class="heading-note">Naming the failure domain is more useful than displaying an unearned uptime number.</p></div>
+          <div class="resilience-grid">
+            <article class="limitation-card reveal"><span class="flow-index">backup boundary / current</span><h3>Manual and local</h3><p>Pong and analytics retain SQLite data on single-writer, node-local persistent storage. Operator documentation contains manual consistency-and-copy procedures, but there is no scheduled encrypted off-cluster backup, retention policy, or verified restore job today.</p><p class="warning-line">Therefore: no public RPO or RTO promise.</p></article>
+            <article class="limitation-card reveal reveal-delay-1"><span class="flow-index">recovery practice / current</span><h3>Safe first response</h3><p>Runbooks start with non-destructive inspection, preserve protected state, check user-facing routes and Flux health, and use a reviewed Git revert for application rollback. Incidents are not currently backed by an automated public status feed or paging service.</p><p class="warning-line">This page is not an incident channel.</p></article>
+            <article class="limitation-card planned-card reveal reveal-delay-2"><span class="flow-index">planned / explicitly not live</span><h3>Close the loop</h3><p>Next reliability work is to add externally generated sanitized status data, user-journey SLOs and burn-rate alerts, encrypted off-cluster backups, restore verification, and repeatable failure drills. Each item needs runtime proof before it becomes a claim here.</p><p class="planned-line">planned ≠ deployed</p></article>
+          </div>
+        </section>
+
+        <section class="content-section reliability-section reliability-contact" aria-labelledby="reliability-contact-title">
+          <div class="contact-card reveal"><div><span class="section-index">06 / QUESTIONS</span><h2 id="reliability-contact-title">Prefer a system<br /><em>you can inspect?</em></h2></div><div class="contact-action"><p>Source, manifests, and the limits behind this page are public.</p><a class="button button-primary" href="https://github.com/macel94/belacca-platform" target="_blank" rel="noreferrer">Inspect the platform <span aria-hidden="true">↗</span></a></div></div>
+        </section>
+      </main>
+
+      <footer class="site-footer"><span>© <span id="year"></span> Francesco Belacca</span><span class="footer-signal"><i class="status-dot"></i> evidence over theater</span><span><a href="/">home</a> · <a href="/privacy.html">privacy</a> · <a href="/reliability.html">reliability</a> · <a href="/status.html">status</a></span></footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+name: External synthetic check
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+# The endpoint is an out-of-band repository/org variable. No URL means a safe
+# skipped check; no secret or production endpoint is committed here.
+permissions:
+  contents: read
+
+jobs:
+  public-endpoint:
+    name: Public site endpoint
+    runs-on: ubuntu-latest
+    env:
+      SYNTHETIC_SITE_URL: ${{ vars.SYNTHETIC_SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check configured site endpoint
+        run: ./scripts/synthetic-check.sh

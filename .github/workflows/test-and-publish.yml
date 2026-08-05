@@ -5,6 +5,12 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'reliability.html'
+      - 'status.html'
+      - 'status.json'
+      - 'status.schema.json'
+      - 'status-contract.md'
+      - 'status.js'
       - 'styles.css'
       - 'app.js'
       - 'count.js'
@@ -16,6 +22,7 @@ on:
       - 'llms.txt'
       - 'sitemap.xml'
       - 'nginx.conf'
+      - 'security-headers.conf'
       - 'Dockerfile'
       - 'package.json'
       - 'tests/**'
@@ -69,6 +76,8 @@ jobs:
           tags: |
             ghcr.io/macel94/francesco-belacca-site:sha-${{ github.sha }}
             ghcr.io/macel94/francesco-belacca-site:latest
+          provenance: mode=max
+          sbom: true
       - name: Record deployed image
         shell: bash
         run: |

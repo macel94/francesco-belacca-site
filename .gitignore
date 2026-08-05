@@ -1,0 +1,4 @@
+# Generated supply-chain and local verification reports
+/artifacts/
+*.sbom.*
+*.trivy.json

@@ -1,0 +1,34 @@
+{
+  "$schema": "/status.schema.json",
+  "schema_version": "belacca.public-status.v1",
+  "sanitized": true,
+  "publication_state": "not_configured",
+  "status": "unknown",
+  "summary": "No external publisher has supplied a current status update.",
+  "updated_at": null,
+  "evidence_timestamp": null,
+  "valid_until": null,
+  "publisher": {
+    "name": null,
+    "source_reference": null
+  },
+  "human_review": {
+    "status": "not_configured",
+    "approved_by": null,
+    "approved_at": null
+  },
+  "uptime": {
+    "state": "not_configured",
+    "value": null,
+    "window": null,
+    "source_reference": null
+  },
+  "components": [],
+  "incidents": [],
+  "source_references": [],
+  "notes": [
+    "This artifact is the checked-in safe default.",
+    "It makes no uptime or availability claim.",
+    "An external publisher must replace it through a reviewed delivery path."
+  ]
+}

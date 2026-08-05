@@ -43,9 +43,117 @@ test('analytics stays first-party and cookie-free', async () => {
 test('navigation targets exist and external links are protected', async () => {
   const html = await read('index.html');
   for (const id of ['about', 'work', 'stack', 'contact']) assert.match(html, new RegExp(`id="${id}"`));
+  assert.match(html, /href="\/reliability\.html"/);
   const externalTargets = [...html.matchAll(/target="_blank"(.*?)>/g)].map((match) => match[1]);
   assert.ok(externalTargets.length >= 4);
   externalTargets.forEach((attrs) => assert.match(attrs, /rel="noreferrer"/));
+});
+
+test('reliability page is linked, canonical, and internally navigable', async () => {
+  const html = await read('reliability.html');
+  const home = await read('index.html');
+  const requiredSections = ['architecture', 'delivery', 'security', 'practice', 'resilience'];
+  assert.match(home, /href="\/reliability\.html"/);
+  assert.match(html, /<html lang="en">/);
+  assert.match(html, /<main id="systems-main" tabindex="-1">/);
+  assert.match(html, /<h1 id="systems-title">/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/francesco\.belacca\.com\/reliability\.html" \/>/);
+  assert.match(html, /<meta property="og:url" content="https:\/\/francesco\.belacca\.com\/reliability\.html" \/>/);
+  for (const id of ['systems-main', ...requiredSections]) assert.match(html, new RegExp(`(?:id|href="#")="${id}"`));
+  for (const section of requiredSections) assert.match(html, new RegExp(`href="#${section}"`));
+  assert.match(html, /href="\/privacy\.html"/);
+});
+
+test('reliability page meets basic keyboard and landmark expectations', async () => {
+  const html = await read('reliability.html');
+  const css = await read('styles.css');
+  const js = await read('app.js');
+  assert.equal((html.match(/<main\b/g) || []).length, 1);
+  assert.equal((html.match(/<h1\b/g) || []).length, 1);
+  assert.match(html, /class="skip-link" href="#systems-main"/);
+  assert.match(html, /aria-label="Primary navigation"/);
+  assert.match(html, /aria-label="Mobile navigation"/);
+  assert.match(html, /role="group" aria-label="Current request and delivery boundaries"/);
+  assert.match(html, /aria-hidden="true"/);
+  assert.match(css, /:where\(a, summary\):focus-visible/);
+  assert.match(css, /\.reliability-shell/);
+  assert.match(css, /\.reliability-disclaimer/);
+  assert.match(js, /prefers-reduced-motion/);
+});
+
+test('reliability copy separates current capability from planned work', async () => {
+  const html = await read('reliability.html');
+  assert.match(html, /not a live status page/);
+  assert.match(html, /not deployed yet/);
+  assert.match(html, /candidate signals \/ not live/);
+  assert.match(html, /no scheduled encrypted off-cluster backup/);
+  assert.match(html, /SBOM and provenance attestations/);
+  assert.match(html, /no admission or Flux verification is configured/);
+  assert.match(html, /manual workflow can sign an immutable digest/);
+  assert.match(html, /planned ≠ deployed/);
+  assert.doesNotMatch(html, /99\.99%/);
+  assert.doesNotMatch(html, /all systems nominal/);
+  assert.doesNotMatch(html, /169\.58\.97\.73|vmi3474918|k3d-pong|10\.43\.0\.10|45371/);
+  assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
+});
+
+test('reliability metadata is safe and build assets are packaged', async () => {
+  const html = await read('reliability.html');
+  const dockerfile = await read('Dockerfile');
+  const workflow = await read('.github/workflows/test-and-publish.yml');
+  const headers = await read('security-headers.conf');
+  assert.match(html, /__BUILD_SHA__/);
+  assert.match(html, /__BUILD_SHA_SHORT__/);
+  assert.match(dockerfile, /COPY index\.html reliability\.html status\.html privacy\.html/);
+  assert.match(dockerfile, /COPY nginx\.conf security-headers\.conf \/etc\/nginx\//);
+  assert.match(dockerfile, /\/usr\/share\/nginx\/html\/index\.html \\\n      \/usr\/share\/nginx\/html\/reliability\.html/);
+  assert.match(workflow, /- 'reliability\.html'/);
+  assert.match(workflow, /- 'security-headers\.conf'/);
+  assert.match(workflow, /provenance: mode=max/);
+  assert.match(workflow, /sbom: true/);
+  assert.match(headers, /X-Content-Type-Options/);
+  assert.doesNotMatch(html, /BUILD_TOKEN|API_KEY|PASSWORD|BEGIN (?:RSA|OPENSSH) PRIVATE KEY/);
+});
+
+test('public status stays unknown until a reviewed external publisher supplies data', async () => {
+  const html = await read('status.html');
+  const script = await read('status.js');
+  const data = JSON.parse(await read('status.json'));
+  const contract = JSON.parse(await read('status.schema.json'));
+  assert.equal(data.schema_version, 'belacca.public-status.v1');
+  assert.equal(data.sanitized, true);
+  assert.equal(data.publication_state, 'not_configured');
+  assert.equal(data.status, 'unknown');
+  assert.equal(data.uptime.state, 'not_configured');
+  assert.equal(data.uptime.value, null);
+  assert.equal(contract.properties.sanitized.const, true);
+  assert.match(html, /<main id="status-main" tabindex="-1">/);
+  assert.match(html, /unknown \/ not configured/);
+  assert.match(html, /This page makes no uptime claim/);
+  assert.match(html, /No component-level status has been configured/);
+  assert.match(html, /An empty incident list is not proof that no incident exists/);
+  assert.match(script, /human_review/);
+  assert.match(script, /valid_until/);
+  assert.match(script, /Status data is unavailable or invalid/);
+  assert.doesNotMatch(html, /99\.99%|all systems nominal|uptime[^<]{0,20}\d+%/i);
+});
+
+test('public status assets are packaged, linked, and not cached as live telemetry', async () => {
+  const html = await read('status.html');
+  const home = await read('index.html');
+  const reliability = await read('reliability.html');
+  const dockerfile = await read('Dockerfile');
+  const nginx = await read('nginx.conf');
+  const workflow = await read('.github/workflows/test-and-publish.yml');
+  const sitemap = await read('sitemap.xml');
+  assert.match(home, /href="\/status\.html"/);
+  assert.match(reliability, /href="\/status\.html"/);
+  assert.match(html, /<link rel="canonical" href="https:\/\/francesco\.belacca\.com\/status\.html" \/>/);
+  for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
+  for (const path of ['status.html', 'status.json', 'status.js']) assert.match(nginx, new RegExp(`location = \\/${path.replace('.', '\\\.')}`));
+  assert.match(nginx, /location = \/status\.json \{[\s\S]*?add_header Cache-Control "no-store"/);
+  for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js']) assert.match(workflow, new RegExp(`- '${asset.replace('.', '\\.')}'`));
+  assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/status\.html<\/loc>/);
 });
 
 test('work section features the requested projects', async () => {
@@ -72,7 +180,7 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(html, /href="\/favicon\.svg" type="image\/svg\+xml"/);
   assert.match(html, /href="\/favicon\.ico" type="image\/x-icon"/);
   assert.match(html, /href="\/site\.webmanifest"/);
-  assert.match(dockerfile, /index\.html privacy\.html styles\.css app\.js count\.js favicon\.svg favicon\.ico site\.webmanifest robots\.txt llms\.txt sitemap\.xml/);
+  for (const asset of ['index.html', 'reliability.html', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon.ico', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
   assert.match(dockerfile, /ARG BUILD_SHA=dev/);
   assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
@@ -84,6 +192,7 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(llms, /https:\/\/github\.com\/macel94\/postquantumdotnettest/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/privacy\.html<\/loc>/);
+  assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/reliability\.html<\/loc>/);
 });
 
 test('navigation remains usable on keyboard and compact screens', async () => {
@@ -108,11 +217,41 @@ test('animation layer includes a reduced-motion path', async () => {
   assert.match(js, /visibilitychange/);
 });
 
-test('container serves a health endpoint with a hardened nginx config', async () => {
+test('container serves a health endpoint with hardened headers and cache behavior', async () => {
   const dockerfile = await read('Dockerfile');
   const nginx = await read('nginx.conf');
+  const headers = await read('security-headers.conf');
   assert.match(dockerfile, /docker\.io\/library\/nginx:1\.27-alpine/);
+  assert.match(nginx, /include \/etc\/nginx\/security-headers\.conf;/);
   assert.match(nginx, /location = \/health/);
-  assert.match(nginx, /Content-Security-Policy/);
-  assert.match(nginx, /X-Content-Type-Options/);
+  assert.match(nginx, /location = \/reliability\.html/);
+  assert.match(nginx, /add_header Cache-Control "no-store"/);
+  assert.match(nginx, /add_header Cache-Control "public, max-age=3600, must-revalidate"/);
+  assert.match(headers, /Content-Security-Policy/);
+  assert.match(headers, /X-Content-Type-Options/);
+  assert.match(headers, /X-Frame-Options/);
+  assert.match(headers, /Referrer-Policy/);
+  assert.match(headers, /Permissions-Policy/);
+});
+
+test('AI assistance and status boundaries are documented', async () => {
+  const rootReadme = await read(resolve(root, '..', 'README.md'));
+  const boundary = await read(resolve(root, '..', 'docs/incident-evidence.md'));
+  assert.match(rootReadme, /read-only/);
+  assert.match(rootReadme, /human approval/);
+  assert.match(rootReadme, /GitOps-only/);
+  assert.match(boundary, /Read-only/);
+  assert.match(boundary, /Evidence-linked/);
+  assert.match(boundary, /Human approval/);
+  assert.match(boundary, /GitOps-only changes/);
+  assert.match(boundary, /never requests Kubernetes Secrets/);
+  assert.match(boundary, /never runs/);
+});
+
+test('redirect boundary is explicit and cannot leak into the static server', async () => {
+  const nginx = await read('nginx.conf');
+  const readme = await read('README.md');
+  assert.doesNotMatch(nginx, /return\s+30[1278]/);
+  assert.match(readme, /deployment and shared host routing live in/);
+  assert.match(readme, /The canonical public URL is/);
 });
