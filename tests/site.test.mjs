@@ -11,6 +11,9 @@ test('site has a semantic document shell and canonical metadata', async () => {
   assert.match(html, /<html lang="en">/);
   assert.match(html, /<main id="top">/);
   assert.match(html, /<h1 id="hero-title">/);
+  assert.match(html, /class="build-version"/);
+  assert.match(html, /__BUILD_SHA__/);
+  assert.match(html, /__BUILD_SHA_SHORT__/);
   assert.match(html, /https:\/\/francesco\.belacca\.com\//);
   assert.match(html, /Cloud Native Pong/);
   assert.match(html, /mailto:francesco\.belacca@hotmail\.it/);
@@ -48,6 +51,8 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(html, /href="\/favicon\.ico" type="image\/x-icon"/);
   assert.match(html, /href="\/site\.webmanifest"/);
   assert.match(dockerfile, /favicon\.svg favicon\.ico site\.webmanifest robots\.txt llms\.txt sitemap\.xml/);
+  assert.match(dockerfile, /ARG BUILD_SHA=dev/);
+  assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
   assert.match(manifest, /"theme_color": "#070a0e"/);
   assert.match(robots, /Allow: \/\n/);
