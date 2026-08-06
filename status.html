@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#070a0e" />
     <meta name="color-scheme" content="dark" />
-    <meta name="description" content="A public, sanitized status surface for the Belacca platform. Unknown until an external publisher supplies reviewed evidence." />
+    <meta name="description" content="A public status surface backed by hourly, sanitized observations from a GitHub-hosted runner outside the single Belacca VM." />
     <meta property="og:title" content="Public Status — Francesco Belacca" />
-    <meta property="og:description" content="A bounded status surface with no uptime claim until an external publisher supplies reviewed evidence." />
+    <meta property="og:description" content="Hourly external observations with explicit single-VM and freshness boundaries." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://francesco.belacca.com/status.html" />
     <link rel="canonical" href="https://francesco.belacca.com/status.html" />
@@ -53,13 +53,13 @@
           <div class="reliability-hero-copy reveal">
             <p class="eyebrow"><span class="prompt">&gt;_</span> public status / sanitized evidence <span class="cursor" aria-hidden="true"></span></p>
             <h1 id="status-title">Status,<br /><em>with receipts.</em></h1>
-            <p class="hero-lede">A deliberately bounded public surface. It does not infer health from this page, its build, or a missing incident report.</p>
-            <p class="reliability-disclaimer"><strong>Current state:</strong> <span data-status-note>No external publisher has supplied a validated status artifact.</span> Until then, the answer is <mark>unknown / not configured</mark>. This page makes no uptime claim.</p>
+            <p class="hero-lede">A deliberately bounded public surface. It consumes hourly, sanitized observations from a GitHub-hosted runner outside this single VM.</p>
+            <p class="reliability-disclaimer"><strong>Current state:</strong> <span data-status-note>No fresh external status observation is available.</span> Until a fresh artifact is validated, the answer is <mark>unknown</mark>. This page never infers health from its own response.</p>
           </div>
           <aside class="metadata-card status-panel reveal reveal-delay-1" data-status-panel data-state="unknown" aria-labelledby="status-panel-title">
             <div class="console-top"><span id="status-panel-title">status://public</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
             <div class="status-state" data-status-state>UNKNOWN</div>
-            <h2 data-status-summary>No external publisher has supplied a current status update.</h2>
+            <h2 data-status-summary>No fresh external status observation is available.</h2>
             <dl class="metadata-list">
               <div><dt>updated</dt><dd data-status-updated>not configured</dd></div>
               <div><dt>evidence</dt><dd data-status-evidence>not configured</dd></div>
@@ -67,13 +67,14 @@
               <div><dt>review</dt><dd data-status-review>not configured</dd></div>
               <div><dt>uptime</dt><dd data-status-uptime>not configured</dd></div>
               <div><dt>valid until</dt><dd data-status-valid-until>not configured</dd></div>
+              <div><dt>observation</dt><dd data-status-observation>not configured</dd></div>
             </dl>
-            <p class="metadata-note">A build timestamp or page response is not an availability measurement. Only a separately published, timestamped, human-approved artifact may populate this panel.</p>
+            <p class="metadata-note">A build timestamp or page response is not an availability measurement. This panel accepts only fresh, sanitized evidence generated under the published monitoring policy.</p>
           </aside>
         </section>
 
         <section class="content-section reliability-section" id="components" aria-labelledby="components-title">
-          <div class="section-heading reveal"><span class="section-index">01</span><h2 id="components-title">Component<br /><em>signals.</em></h2><p class="heading-note">No component status is assumed when the publisher has not configured one.</p></div>
+          <div class="section-heading reveal"><span class="section-index">01</span><h2 id="components-title">Component<br /><em>signals.</em></h2><p class="heading-note">These are the user-facing services covered by the hourly external observation.</p></div>
           <div class="status-list-card reveal">
             <ul class="status-list" data-status-components>
               <li>No component-level status has been configured.</li>
@@ -82,7 +83,7 @@
         </section>
 
         <section class="content-section reliability-section" id="sources" aria-labelledby="sources-title">
-          <div class="section-heading reveal"><span class="section-index">02</span><h2 id="sources-title">Evidence<br /><em>links.</em></h2><p class="heading-note">Published status must carry references that a reviewer can inspect.</p></div>
+          <div class="section-heading reveal"><span class="section-index">02</span><h2 id="sources-title">Evidence<br /><em>links.</em></h2><p class="heading-note">Every published observation carries bounded links to its workflow and history.</p></div>
           <div class="status-list-card reveal">
             <ul class="status-list" data-status-sources>
               <li>No source references have been configured.</li>
@@ -91,7 +92,7 @@
         </section>
 
         <section class="content-section reliability-section" id="incidents" aria-labelledby="incidents-title">
-          <div class="section-heading reveal"><span class="section-index">03</span><h2 id="incidents-title">Incident<br /><em>record.</em></h2><p class="heading-note">An empty incident list is not proof that no incident exists.</p></div>
+          <div class="section-heading reveal"><span class="section-index">03</span><h2 id="incidents-title">Incident<br /><em>record.</em></h2><p class="heading-note">Failures require confirmation; recovery requires consecutive passing observations.</p></div>
           <div class="status-list-card reveal">
             <ul class="status-list" data-status-incidents>
               <li>No incident record has been supplied.</li>
@@ -100,19 +101,19 @@
         </section>
 
         <section class="content-section reliability-section" id="contract" aria-labelledby="contract-title">
-          <div class="section-heading reveal"><span class="section-index">04</span><h2 id="contract-title">A small<br /><em>contract.</em></h2><p class="heading-note">The checked-in artifact is safe by default and can only become a claim through reviewed publication.</p></div>
+          <div class="section-heading reveal"><span class="section-index">04</span><h2 id="contract-title">A small<br /><em>contract.</em></h2><p class="heading-note">The checked-in fallback is safe by default; live claims require fresh, policy-bound evidence.</p></div>
           <div class="security-grid">
-            <article class="security-card reveal"><span class="flow-index">default / current</span><h3>Unknown is valid</h3><p><code>status.json</code> starts as <code>unknown</code>, with publication <code>not_configured</code> and uptime <code>not_configured</code>. Missing, malformed, stale, or unapproved data falls back to the same state.</p></article>
-            <article class="security-card reveal reveal-delay-1"><span class="flow-index">publisher / external</span><h3>Evidence travels with claims</h3><p>A publisher must provide update and evidence timestamps, a validity deadline, source references, and human approval. The browser renders values as text and never treats a build or HTTP response as uptime.</p></article>
+            <article class="security-card reveal"><span class="flow-index">freshness / current</span><h3>Unknown is valid</h3><p>The browser rejects missing, malformed, stale, or expired artifacts. A successful old observation never remains operational forever.</p></article>
+            <article class="security-card reveal reveal-delay-1"><span class="flow-index">policy / external</span><h3>Evidence travels with claims</h3><p>GitHub Actions runs the checks outside this VM and commits sanitized history. The monitoring policy is human-approved; individual observations are automated.</p></article>
           </div>
         </section>
 
         <section class="content-section reliability-section reliability-contact" aria-labelledby="status-contact-title">
-          <div class="contact-card reveal"><div><span class="section-index">05 / BOUNDARY</span><h2 id="status-contact-title">No theater.<br /><em>Just evidence.</em></h2></div><div class="contact-action"><p>Read the collection boundary and AI-assistance rules.</p><a class="button button-primary" href="https://github.com/macel94/belacca-platform/blob/main/docs/incident-evidence.md" target="_blank" rel="noreferrer">Read the boundary <span aria-hidden="true">↗</span></a></div></div>
+          <div class="contact-card reveal"><div><span class="section-index">05 / BOUNDARY</span><h2 id="status-contact-title">One VM.<br /><em>Honest limits.</em></h2></div><div class="contact-action"><p>Read the hourly monitoring policy and preserved evidence history.</p><a class="button button-primary" href="https://github.com/macel94/belacca-status/blob/main/POLICY.md" target="_blank" rel="noreferrer">Read the policy <span aria-hidden="true">↗</span></a></div></div>
         </section>
       </main>
 
-      <footer class="site-footer"><span>© <span id="year"></span> Francesco Belacca</span><span class="footer-signal"><i class="status-dot"></i> unknown by default</span><span><a href="/">home</a> · <a href="/reliability.html">reliability</a> · <a href="/status.html">status</a> · <a href="/privacy.html">privacy</a></span></footer>
+      <footer class="site-footer"><span>© <span id="year"></span> Francesco Belacca</span><span class="footer-signal"><i class="status-dot"></i> external evidence / single VM</span><span><a href="/">home</a> · <a href="/reliability.html">reliability</a> · <a href="/status.html">status</a> · <a href="/privacy.html">privacy</a></span></footer>
     </div>
   </body>
 </html>

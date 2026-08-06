@@ -121,26 +121,29 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.doesNotMatch(html, /BUILD_TOKEN|API_KEY|PASSWORD|BEGIN (?:RSA|OPENSSH) PRIVATE KEY/);
 });
 
-test('public status stays unknown until a reviewed external publisher supplies data', async () => {
+test('public status stays unknown until a fresh automated external observation supplies data', async () => {
   const html = await read('status.html');
   const script = await read('status.js');
   const data = JSON.parse(await read('status.json'));
   const contract = JSON.parse(await read('status.schema.json'));
-  assert.equal(data.schema_version, 'belacca.public-status.v1');
+  assert.equal(data.schema_version, 'belacca.public-status.v2');
   assert.equal(data.sanitized, true);
   assert.equal(data.publication_state, 'not_configured');
   assert.equal(data.status, 'unknown');
+  assert.equal(data.observation_id, null);
+  assert.equal(data.monitoring_policy, null);
   assert.equal(data.uptime.state, 'not_configured');
   assert.equal(data.uptime.value, null);
   assert.equal(contract.properties.sanitized.const, true);
   assert.match(html, /<main id="status-main" tabindex="-1">/);
-  assert.match(html, /unknown \/ not configured/);
-  assert.match(html, /This page makes no uptime claim/);
-  assert.match(html, /No component-level status has been configured/);
-  assert.match(html, /An empty incident list is not proof that no incident exists/);
-  assert.match(script, /human_review/);
+  assert.match(html, /unknown/);
+  assert.match(html, /This page never infers health from its own response/);
+  assert.match(html, /hourly external observation/);
+  assert.match(html, /single VM/);
+  assert.match(script, /monitoring_policy/);
   assert.match(script, /valid_until/);
   assert.match(script, /Status data is unavailable or invalid/);
+  assert.match(script, /raw\.githubusercontent\.com\/macel94\/belacca-status/);
   assert.doesNotMatch(html, /99\.99%|all systems nominal|uptime[^<]{0,20}\d+%/i);
 });
 
@@ -238,6 +241,7 @@ test('container serves a health endpoint with hardened headers and cache behavio
   assert.match(headers, /X-Frame-Options/);
   assert.match(headers, /Referrer-Policy/);
   assert.match(headers, /Permissions-Policy/);
+  assert.match(headers, /connect-src 'self' https:\/\/raw\.githubusercontent\.com/);
 });
 
 test('AI assistance and status boundaries are documented', async () => {

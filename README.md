@@ -5,10 +5,10 @@ cloud engineer, and builder of reliable systems. The site also publishes a
 truthful, bounded [reliability and systems note](reliability.html) describing
 the current platform and its known gaps, plus a sanitized [public status page](status.html).
 
-The site is intentionally a small static application. It includes a public reliability note and an unknown-by-default status contract; neither page claims live availability until externally published evidence exists. Content is curated from
+The site is intentionally a small static application. It includes a public reliability note and a status contract that displays fresh, sanitized hourly observations from a GitHub-hosted runner outside the single VM, with an unknown-by-default fallback. Content is curated from
 the public [`macel94/MACEL94`](https://github.com/macel94/MACEL94) profile source,
-while the browser has no dependency on LinkedIn, GitHub APIs, or a CMS at
-runtime.
+while the browser has no dependency on LinkedIn or a CMS at runtime. The
+status page intentionally reads one public, sanitized artifact from GitHub.
 
 ## Local development
 
@@ -41,7 +41,7 @@ curl -fsS http://localhost:8080/health
   SLO methodology, backup limitations, and incident/recovery practice. Planned
   controls are labeled as planned; no secrets or sensitive host details are
   published.
-- No third-party fonts, runtime analytics vendors, runtime APIs, or client-side framework.
+- No third-party fonts, runtime analytics vendors, or client-side framework. The status page has one explicit read-only dependency on the raw GitHub status artifact.
 - Self-hosted, cookie-free visitor analytics are served through the same-origin `/count` endpoint; see [`privacy.html`](privacy.html). The private dashboard is at `https://stats.belacca.com`.
 
 ## Delivery
@@ -54,11 +54,7 @@ the artifact but is not an availability measurement. Flux in the hosting cluster
 watches this repository and reconciles that deployment manifest.
 
 The current site does not provide application SLO telemetry, burn-rate alerts,
-an externally generated status feed, scheduled off-cluster backups, verified
-restore automation, or a formal incident paging integration. The reliability page describes
-these as gaps or planned work rather than implying they exist. `status.json` is
-checked in as `unknown` / `not_configured`; it is not an uptime feed until an
-external publisher supplies a reviewed, timestamped, source-linked artifact.
+scheduled off-cluster backups, verified restore automation, or a formal incident paging integration. The reliability page describes these as gaps or planned work rather than implying they exist. The separate `macel94/belacca-status` repository runs hourly GitHub-hosted external checks and commits sanitized status history. The site fetches its fresh artifact at runtime and keeps a checked-in `unknown` / `not_configured` fallback.
 Image delivery now has a registry SBOM and GitHub Artifact Attestation
 provenance. Verify an immutable GHCR image with
 `scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
@@ -90,10 +86,7 @@ build provenance. Automatic admission or Flux verification remains a separate
 future control.
 
 The scheduled `.github/workflows/synthetic-check.yml` checks `/health` and the
-HTML shell. Configure `SYNTHETIC_SITE_URL` as an out-of-band repository or
-organization variable. Without it, the script explicitly skips rather than
-claiming a public monitor or alerting integration exists. The Pong two-player
-journey is owned by the sibling `cloudnativepong` repository.
+HTML shell. The separate [`macel94/belacca-status`](https://github.com/macel94/belacca-status) workflow is the hourly public status publisher. It runs outside the VM, reuses the Pong two-player journey from the sibling `cloudnativepong` repository, commits sanitized observations, and expires them after two hours.
 
 Local dry runs require no credentials or external endpoint:
 
@@ -106,14 +99,16 @@ Local dry runs require no credentials or external endpoint:
 
 ### Evidence and AI-assistance boundary
 
-The public status page consumes only the sanitized `status.json` contract. It
-is not a cluster-to-browser status API, and the checked-in default remains
-`unknown` / `not_configured` until an external publisher supplies reviewed,
-timestamped evidence. Any AI-assisted summary of operational evidence must be
-read-only, evidence-linked, and subject to human approval. Production changes
-are GitOps-only: they must be proposed, reviewed, tested, and applied through
-the appropriate repository and Flux path. This site repository does not collect
-Kubernetes evidence, request Secrets, or mutate a cluster.
+The public status page consumes the sanitized v2 artifact from the separate
+status repository and falls back to checked-in `unknown` / `not_configured` when
+that artifact is missing, malformed, or stale. The GitHub-hosted runner is an
+external observation source, not multi-region monitoring. Human approval applies
+to the monitoring policy, not to each automated observation. The page cannot be
+served during a complete outage of the single VM; the remote repository retains
+the observation for display after recovery. Any AI-assisted summary of
+operational evidence must be read-only, evidence-linked, and subject to human approval. Production changes are GitOps-only: they must be proposed, reviewed,
+tested, and applied through the appropriate repository and Flux path. This site
+repository does not collect Kubernetes evidence, request Secrets, or mutate a cluster.
 
 The canonical public URL is [`https://francesco.belacca.com`](https://francesco.belacca.com).
 The deployment and shared host routing live in

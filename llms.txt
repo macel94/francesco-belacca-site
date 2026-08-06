@@ -25,7 +25,7 @@ Francesco Belacca is a Senior Site Reliability Engineer based in Parma, Italy. H
 ## Reliability and systems note
 
 - [Reliability / Systems](https://francesco.belacca.com/reliability.html): A public, bounded description of the current static-site and Pong architecture, GitOps delivery path, security boundaries, SLO methodology, backup limitations, and incident/recovery practice. It explicitly labels planned capabilities and is not a live status page.
-- [Public Status](https://francesco.belacca.com/status.html): A sanitized, static status contract that stays unknown / not configured until an external publisher supplies timestamped, source-linked, human-approved data. It makes no false uptime claim.
+- [Public Status](https://francesco.belacca.com/status.html): A sanitized status surface fed by hourly GitHub-hosted external observations from the separate [belacca-status repository](https://github.com/macel94/belacca-status). It expires stale data, preserves an unknown fallback, and documents the single-VM limitation.
 
 ## Public profiles
 

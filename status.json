@@ -1,10 +1,12 @@
 {
   "$schema": "/status.schema.json",
-  "schema_version": "belacca.public-status.v1",
+  "schema_version": "belacca.public-status.v2",
   "sanitized": true,
   "publication_state": "not_configured",
   "status": "unknown",
-  "summary": "No external publisher has supplied a current status update.",
+  "summary": "No fresh external status observation is available.",
+  "observation_id": null,
+  "observed_at": null,
   "updated_at": null,
   "evidence_timestamp": null,
   "valid_until": null,
@@ -12,23 +14,19 @@
     "name": null,
     "source_reference": null
   },
-  "human_review": {
-    "status": "not_configured",
-    "approved_by": null,
-    "approved_at": null
-  },
+  "monitoring_policy": null,
   "uptime": {
     "state": "not_configured",
     "value": null,
-    "window": null,
+    "window": "24h",
     "source_reference": null
   },
   "components": [],
   "incidents": [],
   "source_references": [],
   "notes": [
-    "This artifact is the checked-in safe default.",
-    "It makes no uptime or availability claim.",
-    "An external publisher must replace it through a reviewed delivery path."
+    "This artifact is the checked-in safe fallback.",
+    "The live artifact is generated hourly in the separate belacca-status repository.",
+    "The page makes no availability claim when external evidence is missing or stale."
   ]
 }
