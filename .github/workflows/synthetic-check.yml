@@ -17,6 +17,6 @@ jobs:
     env:
       SYNTHETIC_SITE_URL: ${{ vars.SYNTHETIC_SITE_URL }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check configured site endpoint
         run: ./scripts/synthetic-check.sh
