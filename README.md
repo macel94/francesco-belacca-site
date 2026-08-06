@@ -59,32 +59,35 @@ restore automation, or a formal incident paging integration. The reliability pag
 these as gaps or planned work rather than implying they exist. `status.json` is
 checked in as `unknown` / `not_configured`; it is not an uptime feed until an
 external publisher supplies a reviewed, timestamped, source-linked artifact.
-Image delivery now has SBOM/provenance generation and a manual digest-only Cosign
-hook; verification still requires an operator or admission policy to check the
-published evidence.
+Image delivery now has a registry SBOM and GitHub Artifact Attestation
+provenance. Verify an immutable GHCR image with
+`scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
+configured.
 
 ### Supply chain and synthetic endpoint check
 
 `.github/workflows/supply-chain.yml` builds the site image in CI, uploads a
 CycloneDX SBOM, and stores a Trivy HIGH/CRITICAL report. Normal runs are
 report-only and ignore unfixed findings; use the workflow's manual `strict=true`
-input for an explicit security gate. The regular publish workflow adds BuildKit
-`mode=max` provenance and SBOM attestations to the pushed GHCR image. These
-attestations exist on a pushed registry image, not on a local `docker build`.
+input for an explicit security gate. The regular publish workflow adds a registry SBOM and GitHub Artifact
+Attestation provenance to the pushed GHCR image. `actions/attest@v4` signs the
+SLSA provenance with GitHub's short-lived identity and pushes it to the
+registry; these attestations exist on a pushed image, not on a local `docker
+build`.
 
-`.github/workflows/sign-image.yml` is manual and requires an immutable
-`IMAGE@sha256:<digest>` input. It uses Sigstore keyless signing through GitHub
-OIDC (`id-token: write`); no private key or registry credential is committed. `scripts/verify-image.sh`
-provides the matching digest-only verification hook; pass the expected
-repository workflow identity regexp rather than accepting any signer. The
-digest, provenance attestation, and signature are separate evidence: use the
-registry digest to identify exact bytes, provenance to inspect the build, and
-Cosign verification to validate publisher identity. For example, inspect the
-published referrers with `docker buildx imagetools inspect
-IMAGE@sha256:<digest>`/`cosign tree IMAGE@sha256:<digest>`, then run the
-repository's `verify-image.sh` with an expected workflow identity regexp.
-`cosign verify-attestation` applies only to Cosign-signed attestations, not
-automatically to every BuildKit referrer.
+Verify an immutable image with:
+
+```bash
+./scripts/verify-attestation.sh \
+  ghcr.io/macel94/francesco-belacca-site@sha256:<digest>
+```
+
+The helper runs `gh attestation verify` with the expected repository, publish
+workflow, OIDC issuer, registry bundle, and SLSA provenance predicate. No
+separate signing executable, private key, or manual signing workflow is required. The
+image digest identifies exact bytes; the GitHub attestation provides signed
+build provenance. Automatic admission or Flux verification remains a separate
+future control.
 
 The scheduled `.github/workflows/synthetic-check.yml` checks `/health` and the
 HTML shell. Configure `SYNTHETIC_SITE_URL` as an out-of-band repository or
@@ -97,8 +100,7 @@ Local dry runs require no credentials or external endpoint:
 ```bash
 ./scripts/supply-chain.sh sbom --dry-run
 ./scripts/supply-chain.sh scan --dry-run
-./scripts/sign-image.sh ghcr.io/macel94/francesco-belacca-site@sha256:$(printf '0%.0s' {1..64}) --dry-run
-./scripts/verify-image.sh ghcr.io/macel94/francesco-belacca-site@sha256:$(printf '0%.0s' {1..64}) --certificate-identity-regexp 'repo:macel94/francesco-belacca-site:.*' --dry-run
+./scripts/verify-attestation.sh ghcr.io/macel94/francesco-belacca-site@sha256:$(printf '0%.0s' {1..64}) --dry-run
 ./scripts/synthetic-check.sh --dry-run
 ```
 

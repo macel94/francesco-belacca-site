@@ -87,9 +87,10 @@ test('reliability copy separates current capability from planned work', async ()
   assert.match(html, /not deployed yet/);
   assert.match(html, /candidate signals \/ not live/);
   assert.match(html, /no scheduled encrypted off-cluster backup/);
-  assert.match(html, /SBOM and provenance attestations/);
+  assert.match(html, /registry SBOM and GitHub Artifact Attestation provenance/);
   assert.match(html, /no admission or Flux verification is configured/);
-  assert.match(html, /manual workflow can sign an immutable digest/);
+  assert.match(html, /GitHub Artifact Attestation provenance/);
+  assert.match(html, /automatic attestation verification at reconciliation/);
   assert.match(html, /planned ≠ deployed/);
   assert.doesNotMatch(html, /99\.99%/);
   assert.doesNotMatch(html, /all systems nominal/);
@@ -110,8 +111,12 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(workflow, /- 'reliability\.html'/);
   assert.match(workflow, /- 'security-headers\.conf'/);
   assert.match(workflow, /docker\/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c/);
-  assert.match(workflow, /provenance: mode=max/);
+  assert.match(workflow, /actions\/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6/);
+  assert.match(workflow, /subject-digest: \$\{\{ steps\.build\.outputs\.digest \}\}/);
+  assert.match(workflow, /push-to-registry: true/);
+  assert.match(workflow, /provenance: false/);
   assert.match(workflow, /sbom: true/);
+  assert.match(workflow, /artifact-metadata: write/);
   assert.match(headers, /X-Content-Type-Options/);
   assert.doesNotMatch(html, /BUILD_TOKEN|API_KEY|PASSWORD|BEGIN (?:RSA|OPENSSH) PRIVATE KEY/);
 });

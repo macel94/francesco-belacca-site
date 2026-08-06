@@ -100,7 +100,7 @@
               <li><span class="step-number">02</span><div><h3>Test and build</h3><p>GitHub Actions runs the site tests, builds the NGINX image, and publishes a commit-addressed GHCR tag.</p></div></li>
               <li><span class="step-number">03</span><div><h3>Record</h3><p>The workflow writes the immutable SHA tag to the deployment Kustomization, keeping the intended release in Git.</p></div></li>
               <li><span class="step-number">04</span><div><h3>Reconcile</h3><p>Flux watches the application repository and applies the site deployment on its configured reconciliation interval.</p></div></li>
-              <li><span class="step-number">05</span><div><h3>Rollback</h3><p>The documented rollback is a reviewed Git revert followed by reconciliation. Published images now carry SBOM and provenance attestations; digest signing is a separate manual step, and no admission or Flux verification is configured.</p></div></li>
+              <li><span class="step-number">05</span><div><h3>Rollback</h3><p>The documented rollback is a reviewed Git revert followed by reconciliation. Published images now carry a registry SBOM and GitHub Artifact Attestation provenance; no admission or Flux verification is configured.</p></div></li>
             </ol>
             <aside class="boundary-card reveal reveal-delay-1" aria-labelledby="delivery-boundary-title">
               <span class="flow-index">delivery boundary</span>
@@ -108,7 +108,7 @@
               <ul>
                 <li>A green build is not proof of live availability.</li>
                 <li>Flux health is not a user-journey SLO.</li>
-                <li>SHA tags identify source; they do not attest to a signed supply chain.</li>
+                <li>SHA tags identify source; the separate GitHub Artifact Attestation proves build provenance.</li>
                 <li>The status shown here is generated at image build time, not from the cluster.</li>
               </ul>
             </aside>
@@ -121,7 +121,7 @@
             <article class="security-card reveal"><span class="flow-index">public surface</span><h3>Browser to site</h3><p>The site is served over the TLS route and has NGINX security headers for content type sniffing, framing, referrers, permissions, and content policy. The CSP keeps scripts, styles, connections, and forms on the same origin.</p></article>
             <article class="security-card reveal reveal-delay-1"><span class="flow-index">private control</span><h3>Operations stay separate</h3><p>The Kubernetes dashboard is a separately routed, authenticated surface with read-only access. It is not embedded in this site, and no credentials, tokens, or cluster control plane are shipped to visitors.</p></article>
             <article class="security-card reveal reveal-delay-2"><span class="flow-index">internal callbacks</span><h3>Room lifecycle stays internal</h3><p>Pong room lifecycle callbacks are addressed through the internal application service rather than the public gateway. Public WebSocket traffic reaches the game path; it does not expose the control callback.</p></article>
-            <article class="security-card reveal reveal-delay-3"><span class="flow-index">honest gap</span><h3>Controls still to add</h3><p>Published images now receive SBOM and provenance attestations, and a separate manual workflow can sign an immutable digest. Default-deny network policy, automatic signature/provenance verification at reconciliation, and a mandatory vulnerability gate are not configured. They must not be inferred from the current headers or GitOps flow.</p></article>
+            <article class="security-card reveal reveal-delay-3"><span class="flow-index">honest gap</span><h3>Controls still to add</h3><p>Published images now receive a registry SBOM and GitHub Artifact Attestation provenance. Default-deny network policy, automatic attestation verification at reconciliation, and a mandatory vulnerability gate are not configured. They must not be inferred from the current headers or GitOps flow.</p></article>
           </div>
         </section>
 
