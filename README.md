@@ -83,7 +83,7 @@ Verify an immutable image with:
 ```
 
 The helper runs `gh attestation verify` with the expected repository, publish
-workflow, OIDC issuer, registry bundle, and SLSA provenance predicate. No
+workflow, OIDC issuer, GitHub attestation record, and SLSA provenance predicate. No
 separate signing executable, private key, or manual signing workflow is required. The
 image digest identifies exact bytes; the GitHub attestation provides signed
 build provenance. Automatic admission or Flux verification remains a separate
