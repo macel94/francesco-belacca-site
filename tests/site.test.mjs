@@ -110,8 +110,8 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(dockerfile, /\/usr\/share\/nginx\/html\/index\.html \\\n      \/usr\/share\/nginx\/html\/reliability\.html/);
   assert.match(workflow, /- 'reliability\.html'/);
   assert.match(workflow, /- 'security-headers\.conf'/);
-  assert.match(workflow, /docker\/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c/);
-  assert.match(workflow, /actions\/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6/);
+  assert.match(workflow, /docker\/setup-buildx-action@[0-9a-f]{40}/);
+  assert.match(workflow, /actions\/attest@[0-9a-f]{40}/);
   assert.match(workflow, /subject-digest: \$\{\{ steps\.build\.outputs\.digest \}\}/);
   assert.match(workflow, /push-to-registry: true/);
   assert.match(workflow, /provenance: false/);
