@@ -111,5 +111,9 @@ tested, and applied through the appropriate repository and Flux path. This site
 repository does not collect Kubernetes evidence, request Secrets, or mutate a cluster.
 
 The canonical public URL is [`https://francesco.belacca.com`](https://francesco.belacca.com).
-The deployment and shared host routing live in
+The aliases `belacca.com`, `www.belacca.com`, and
+`www.francesco.belacca.com` permanently redirect to that URL. The complete
+platform inventory is maintained in
+[`macel94/belacca-gitops/docs/SITES.md`](https://github.com/macel94/belacca-gitops/blob/main/docs/SITES.md).
+deployment and shared host routing live in
 [`macel94/belacca-gitops`](https://github.com/macel94/belacca-gitops).
