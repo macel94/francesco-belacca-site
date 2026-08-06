@@ -24,6 +24,7 @@ on:
       - 'nginx.conf'
       - 'security-headers.conf'
       - 'Dockerfile'
+      - '.dockerignore'
       - 'package.json'
       - 'tests/**'
       - 'deploy/**'

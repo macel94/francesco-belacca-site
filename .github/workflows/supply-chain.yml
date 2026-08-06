@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'Dockerfile'
+      - '.dockerignore'
       - 'package.json'
       - '*.html'
       - '*.css'
@@ -12,6 +13,7 @@ on:
       - '*.xml'
       - '*.txt'
       - 'nginx.conf'
+      - 'security-headers.conf'
       - 'scripts/supply-chain.sh'
       - '.github/workflows/supply-chain.yml'
   pull_request:
