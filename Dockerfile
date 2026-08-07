@@ -16,6 +16,11 @@ RUN build_sha_short="$(printf '%s' "${BUILD_SHA}" | cut -c1-7)" \
       /srv/reliability.html \
       /srv/status.html
 
+# The upstream image grants cap_net_bind_service to Caddy. This workload
+# listens on 8080 and runs with allowPrivilegeEscalation=false, so retaining
+# that file capability makes hardened Kubernetes runtimes reject execve.
+RUN setcap -r /usr/bin/caddy
+
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
