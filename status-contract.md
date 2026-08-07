@@ -22,7 +22,9 @@ fallback and is not a live telemetry feed.
 ## Evidence boundary
 
 The remote publisher checks the public portfolio, the Pong public endpoints and
-full two-player WebSocket journey, and the public analytics status endpoint.
+the full two-player WebSocket-compatible journey, and the public analytics status
+endpoint. Native WebTransport is an opt-in deployment path and is not treated as
+a public monitoring prerequisite until UDP ingress is enabled.
 It stores no response bodies, room IDs, player names, addresses, cookies, tokens,
 internal hostnames, or raw exception messages. Uptime remains `not_configured`
 until at least 24 hourly observations cover the initial 24-hour window.

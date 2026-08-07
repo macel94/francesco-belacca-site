@@ -12,8 +12,7 @@ on:
       - '*.js'
       - '*.xml'
       - '*.txt'
-      - 'nginx.conf'
-      - 'security-headers.conf'
+      - 'Caddyfile'
       - 'scripts/supply-chain.sh'
       - '.github/workflows/supply-chain.yml'
   pull_request:

@@ -18,8 +18,9 @@ python3 -m http.server 8080
 # open http://localhost:8080
 ```
 
-The production image uses NGINX on port `8080` and exposes `GET /health` for
-Kubernetes probes. `reliability.html` is static documentation, not a live status
+The production image uses Caddy on port `8080` and exposes `GET /health` for
+Kubernetes probes. The portfolio is stateless; Caddy also preserves the
+same-origin `/count` proxy and its security/cache contract. `reliability.html` is static documentation, not a live status
 feed or telemetry endpoint:
 
 ```bash

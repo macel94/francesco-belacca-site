@@ -1,0 +1,54 @@
+{
+    admin off
+    auto_https off
+}
+
+:8080 {
+    root * /srv
+    encode gzip
+
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://raw.githubusercontent.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+    }
+
+    @health path /health
+
+    # Keep analytics same-origin while proxying to the in-cluster GoatCounter
+    # service. The upstream Host is intentionally the public stats hostname.
+    # Caddy's reverse_proxy preserves and appends X-Forwarded-For by default.
+    @count path /count
+    reverse_proxy @count goatcounter.analytics.svc.cluster.local {
+        header_up Host stats.belacca.com
+        header_up X-Real-IP {remote_host}
+        flush_interval -1
+    }
+
+    @countjs path /count.js
+    header @countjs Cache-Control "public, max-age=86400, must-revalidate"
+    @appjs path /app.js
+    header @appjs Cache-Control "public, max-age=3600, must-revalidate"
+    @reliability path /reliability.html
+    header @reliability Cache-Control "public, max-age=3600, must-revalidate"
+    @statushtml path /status.html
+    header @statushtml Cache-Control "no-store"
+    @statusjson path /status.json
+    header @statusjson Cache-Control "no-store"
+    @statusjs path /status.js
+    header @statusjs Cache-Control "no-store"
+    @styles path /styles.css
+    header @styles Cache-Control "public, max-age=3600, must-revalidate"
+
+    route {
+        handle @health {
+            header Cache-Control "no-store"
+            header Content-Type "text/plain; charset=utf-8"
+            respond "ok" 200
+        }
+        try_files {path} {path}/ /index.html
+        file_server
+    }
+}

@@ -18,9 +18,10 @@ spec:
     spec:
       automountServiceAccountToken: false
       securityContext:
-        fsGroup: 101
-        runAsGroup: 101
-        runAsUser: 101
+        fsGroup: 1000
+        runAsNonRoot: true
+        runAsGroup: 1000
+        runAsUser: 1000
         seccompProfile:
           type: RuntimeDefault
       containers:
@@ -62,16 +63,12 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           volumeMounts:
-            - name: nginx-cache
-              mountPath: /var/cache/nginx
-            - name: nginx-run
-              mountPath: /var/run
-            - name: nginx-tmp
-              mountPath: /tmp
+            - name: caddy-data
+              mountPath: /data
+            - name: caddy-config
+              mountPath: /config
       volumes:
-        - name: nginx-cache
+        - name: caddy-data
           emptyDir: {}
-        - name: nginx-run
-          emptyDir: {}
-        - name: nginx-tmp
+        - name: caddy-config
           emptyDir: {}

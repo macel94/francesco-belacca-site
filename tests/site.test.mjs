@@ -23,21 +23,19 @@ test('analytics stays first-party and cookie-free', async () => {
   const html = await read('index.html');
   const privacy = await read('privacy.html');
   const tracker = await read('count.js');
-  const nginx = await read('nginx.conf');
+  const caddy = await read('Caddyfile');
   assert.match(html, /data-goatcounter="\/count" async src="\/count\.js"/);
   assert.match(html, /href="\/privacy\.html"/);
   assert.match(privacy, /self-hosted analytics/);
   assert.match(privacy, /does not use advertising trackers/);
   assert.match(tracker, /GoatCounter/);
   assert.doesNotMatch(tracker, /gc\.zgo\.at|zgo\.at\/count/);
-  assert.match(nginx, /location = \/count \{/);
-  assert.match(nginx, /resolver 10\.43\.0\.10 valid=30s;/);
-  assert.match(nginx, /set \$goatcounter_upstream goatcounter\.analytics\.svc\.cluster\.local;/);
-  assert.match(nginx, /proxy_pass http:\/\/\$goatcounter_upstream;/);
-  assert.match(nginx, /proxy_set_header Host stats\.belacca\.com;/);
-  assert.match(nginx, /proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;/);
-  assert.match(nginx, /proxy_set_header X-Real-IP \$remote_addr;/);
-  assert.match(nginx, /location = \/count\.js \{/);
+  assert.match(caddy, /@count path \/count/);
+  assert.match(caddy, /goatcounter\.analytics\.svc\.cluster\.local/);
+  assert.match(caddy, /header_up Host stats\.belacca\.com/);
+  assert.match(caddy, /preserves and appends X-Forwarded-For by default/);
+  assert.match(caddy, /header_up X-Real-IP \{remote_host\}/);
+  assert.match(caddy, /@countjs path \/count\.js/);
 });
 
 test('navigation targets exist and external links are protected', async () => {
@@ -102,14 +100,14 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   const html = await read('reliability.html');
   const dockerfile = await read('Dockerfile');
   const workflow = await read('.github/workflows/test-and-publish.yml');
-  const headers = await read('security-headers.conf');
+  const caddy = await read('Caddyfile');
   assert.match(html, /__BUILD_SHA__/);
   assert.match(html, /__BUILD_SHA_SHORT__/);
   assert.match(dockerfile, /COPY index\.html reliability\.html status\.html privacy\.html/);
-  assert.match(dockerfile, /COPY nginx\.conf security-headers\.conf \/etc\/nginx\//);
-  assert.match(dockerfile, /\/usr\/share\/nginx\/html\/index\.html \\\n      \/usr\/share\/nginx\/html\/reliability\.html/);
+  assert.match(dockerfile, /COPY Caddyfile \/etc\/caddy\/Caddyfile/);
+  assert.match(dockerfile, /\/srv\/index\.html/);
   assert.match(workflow, /- 'reliability\.html'/);
-  assert.match(workflow, /- 'security-headers\.conf'/);
+  assert.match(workflow, /- 'Caddyfile'/);
   assert.match(workflow, /docker\/setup-buildx-action@[0-9a-f]{40}/);
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/);
   assert.match(workflow, /subject-digest: \$\{\{ steps\.build\.outputs\.digest \}\}/);
@@ -117,7 +115,7 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(workflow, /provenance: false/);
   assert.match(workflow, /sbom: true/);
   assert.match(workflow, /artifact-metadata: write/);
-  assert.match(headers, /X-Content-Type-Options/);
+  assert.match(caddy, /X-Content-Type-Options/);
   assert.doesNotMatch(html, /BUILD_TOKEN|API_KEY|PASSWORD|BEGIN (?:RSA|OPENSSH) PRIVATE KEY/);
 });
 
@@ -152,15 +150,15 @@ test('public status assets are packaged, linked, and not cached as live telemetr
   const home = await read('index.html');
   const reliability = await read('reliability.html');
   const dockerfile = await read('Dockerfile');
-  const nginx = await read('nginx.conf');
+  const caddy = await read('Caddyfile');
   const workflow = await read('.github/workflows/test-and-publish.yml');
   const sitemap = await read('sitemap.xml');
   assert.match(home, /href="\/status\.html"/);
   assert.match(reliability, /href="\/status\.html"/);
   assert.match(html, /<link rel="canonical" href="https:\/\/francesco\.belacca\.com\/status\.html" \/>/);
   for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
-  for (const path of ['status.html', 'status.json', 'status.js']) assert.match(nginx, new RegExp(`location = \\/${path.replace('.', '\\\.')}`));
-  assert.match(nginx, /location = \/status\.json \{[\s\S]*?add_header Cache-Control "no-store"/);
+  for (const path of ['status.html', 'status.json', 'status.js']) assert.match(caddy, new RegExp(`path \\/${path.replace('.', '\\\.')}`));
+  assert.match(caddy, /@statusjson path \/status\.json[\s\S]*?header @statusjson Cache-Control "no-store"/);
   for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js']) assert.match(workflow, new RegExp(`- '${asset.replace('.', '\\.')}'`));
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/status\.html<\/loc>/);
 });
@@ -228,20 +226,18 @@ test('animation layer includes a reduced-motion path', async () => {
 
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {
   const dockerfile = await read('Dockerfile');
-  const nginx = await read('nginx.conf');
-  const headers = await read('security-headers.conf');
-  assert.match(dockerfile, /docker\.io\/library\/nginx:1\.27-alpine/);
-  assert.match(nginx, /include \/etc\/nginx\/security-headers\.conf;/);
-  assert.match(nginx, /location = \/health/);
-  assert.match(nginx, /location = \/reliability\.html/);
-  assert.match(nginx, /add_header Cache-Control "no-store"/);
-  assert.match(nginx, /add_header Cache-Control "public, max-age=3600, must-revalidate"/);
-  assert.match(headers, /Content-Security-Policy/);
-  assert.match(headers, /X-Content-Type-Options/);
-  assert.match(headers, /X-Frame-Options/);
-  assert.match(headers, /Referrer-Policy/);
-  assert.match(headers, /Permissions-Policy/);
-  assert.match(headers, /connect-src 'self' https:\/\/raw\.githubusercontent\.com/);
+  const caddy = await read('Caddyfile');
+  assert.match(dockerfile, /docker\.io\/library\/caddy:2\.10\.2-alpine/);
+  assert.match(caddy, /@health path \/health/);
+  assert.match(caddy, /@reliability path \/reliability\.html/);
+  assert.match(caddy, /header @statushtml Cache-Control "no-store"/);
+  assert.match(caddy, /header @styles Cache-Control "public, max-age=3600, must-revalidate"/);
+  assert.match(caddy, /Content-Security-Policy/);
+  assert.match(caddy, /X-Content-Type-Options/);
+  assert.match(caddy, /X-Frame-Options/);
+  assert.match(caddy, /Referrer-Policy/);
+  assert.match(caddy, /Permissions-Policy/);
+  assert.match(caddy, /connect-src 'self' https:\/\/raw\.githubusercontent\.com/);
 });
 
 test('AI assistance and status boundaries are documented', async () => {
@@ -256,9 +252,9 @@ test('AI assistance and status boundaries are documented', async () => {
 });
 
 test('redirect boundary is explicit and cannot leak into the static server', async () => {
-  const nginx = await read('nginx.conf');
+  const caddy = await read('Caddyfile');
   const readme = await read('README.md');
-  assert.doesNotMatch(nginx, /return\s+30[1278]/);
+  assert.doesNotMatch(caddy, /redir\s+30[1278]/);
   assert.match(readme, /deployment and shared host routing live in/);
   assert.match(readme, /The canonical public URL is/);
 });

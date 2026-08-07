@@ -13,7 +13,7 @@ updates:
         patterns:
           - "*"
 
-  # The nginx base image used by Dockerfile.
+  # The Caddy base image used by Dockerfile.
   - package-ecosystem: docker
     directory: /
     schedule:
