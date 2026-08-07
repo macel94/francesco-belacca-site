@@ -10,6 +10,18 @@ the public [`macel94/MACEL94`](https://github.com/macel94/MACEL94) profile sourc
 while the browser has no dependency on LinkedIn or a CMS at runtime. The
 status page intentionally reads one public, sanitized artifact from GitHub.
 
+## Platform migration state
+
+The platform is in a blue/green migration. The existing single-host `k3d-pong`
+cluster on `.73` remains the **active-public** production edge. The validated
+three-server native k3s cluster is **native-staging**: it is a migration target
+and does not yet own public application DNS, ingress, workloads, or protected
+PVCs. Native staging is not a development sandbox; use local mode or an
+explicitly disposable isolated environment for development. See the parent
+[`plan.md`](https://github.com/macel94/belacca-platform/blob/main/plan.md),
+sibling [`belacca-infrastructure`](https://github.com/macel94/belacca-infrastructure),
+and [`belacca-gitops`](https://github.com/macel94/belacca-gitops).
+
 ## Local development
 
 ```bash
@@ -55,7 +67,13 @@ the artifact but is not an availability measurement. Flux in the hosting cluster
 watches this repository and reconciles that deployment manifest.
 
 The current site does not provide application SLO telemetry, burn-rate alerts,
-scheduled off-cluster backups, verified restore automation, or a formal incident paging integration. The reliability page describes these as gaps or planned work rather than implying they exist. The separate `macel94/belacca-status` repository runs hourly GitHub-hosted external checks and commits sanitized status history. The site fetches its fresh artifact at runtime and keeps a checked-in `unknown` / `not_configured` fallback.
+scheduled off-cluster backups, verified restore automation, or a formal incident
+paging integration. The external sanitized status publisher is deployed in the
+separate `macel94/belacca-status` repository: it runs hourly GitHub-hosted
+external checks and commits sanitized status history. The reliability page
+describes SLO measurement, backups, and paging as separate gaps rather than
+implying they exist. The site fetches its fresh artifact at runtime and keeps a
+checked-in `unknown` / `not_configured` fallback.
 Image delivery now has a registry SBOM and GitHub Artifact Attestation
 provenance. Verify an immutable GHCR image with
 `scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
