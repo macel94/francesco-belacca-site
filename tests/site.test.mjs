@@ -137,7 +137,7 @@ test('public status stays unknown until a fresh automated external observation s
   assert.match(html, /unknown/);
   assert.match(html, /This page never infers health from its own response/);
   assert.match(html, /hourly external observation/);
-  assert.match(html, /single VM/);
+  assert.match(html, /native cluster/);
   assert.match(script, /monitoring_policy/);
   assert.match(script, /valid_until/);
   assert.match(script, /Status data is unavailable or invalid/);

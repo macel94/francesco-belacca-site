@@ -5,19 +5,22 @@ cloud engineer, and builder of reliable systems. The site also publishes a
 truthful, bounded [reliability and systems note](reliability.html) describing
 the current platform and its known gaps, plus a sanitized [public status page](status.html).
 
-The site is intentionally a small static application. It includes a public reliability note and a status contract that displays fresh, sanitized hourly observations from a GitHub-hosted runner outside the single VM, with an unknown-by-default fallback. Content is curated from
+The site is intentionally a small static application. It includes a public reliability note and a status contract that displays fresh, sanitized hourly observations from a GitHub-hosted runner outside the native cluster, with an unknown-by-default fallback. Content is curated from
 the public [`macel94/MACEL94`](https://github.com/macel94/MACEL94) profile source,
 while the browser has no dependency on LinkedIn or a CMS at runtime. The
 status page intentionally reads one public, sanitized artifact from GitHub.
 
-## Platform migration state
+## Platform production state
 
-The platform is in a blue/green migration. The existing single-host `k3d-pong`
-cluster on `.73` remains the **active-public** production edge. The validated
-three-server native k3s cluster is **native-staging**: it is a migration target
-and does not yet own public application DNS, ingress, workloads, or protected
-PVCs. Native staging is not a development sandbox; use local mode or an
-explicitly disposable isolated environment for development. See the parent
+The platform now runs on the three-server native k3s production cluster.
+Cloudflare DNS-only records for application hosts contain `.41` and `.42`, and
+native Flux, Traefik, cert-manager, Longhorn, Pong, portfolio, analytics, Dex,
+Headlamp, and Flux Web are operational. Pong, GoatCounter, and Dex state was
+quiesced, integrity-checked, and restored into native Longhorn-backed RWO PVCs.
+
+The former single-host `k3d-pong` runtime on `.73` was retired after cutover.
+Native production is not a development sandbox; use local mode or an explicitly
+disposable isolated environment for development. See the parent
 [`plan.md`](https://github.com/macel94/belacca-platform/blob/main/plan.md),
 sibling [`belacca-infrastructure`](https://github.com/macel94/belacca-infrastructure),
 and [`belacca-gitops`](https://github.com/macel94/belacca-gitops).
@@ -123,7 +126,7 @@ status repository and falls back to checked-in `unknown` / `not_configured` when
 that artifact is missing, malformed, or stale. The GitHub-hosted runner is an
 external observation source, not multi-region monitoring. Human approval applies
 to the monitoring policy, not to each automated observation. The page cannot be
-served during a complete outage of the single VM; the remote repository retains
+served during a complete outage of the native cluster; the remote repository retains
 the observation for display after recovery. Any AI-assisted summary of
 operational evidence must be read-only, evidence-linked, and subject to human approval. Production changes are GitOps-only: they must be proposed, reviewed,
 tested, and applied through the appropriate repository and Flux path. This site

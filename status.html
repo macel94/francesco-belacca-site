@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#070a0e" />
     <meta name="color-scheme" content="dark" />
-    <meta name="description" content="A public status surface backed by hourly, sanitized observations from a GitHub-hosted runner outside the single Belacca VM." />
+    <meta name="description" content="A public status surface backed by hourly, sanitized observations from a GitHub-hosted runner outside the native cluster." />
     <meta property="og:title" content="Public Status — Francesco Belacca" />
-    <meta property="og:description" content="Hourly external observations with explicit single-VM and freshness boundaries." />
+    <meta property="og:description" content="Hourly external observations with explicit single-cluster and freshness boundaries." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://francesco.belacca.com/status.html" />
     <link rel="canonical" href="https://francesco.belacca.com/status.html" />
@@ -53,7 +53,7 @@
           <div class="reliability-hero-copy reveal">
             <p class="eyebrow"><span class="prompt">&gt;_</span> public status / sanitized evidence <span class="cursor" aria-hidden="true"></span></p>
             <h1 id="status-title">Status,<br /><em>with receipts.</em></h1>
-            <p class="hero-lede">A deliberately bounded public surface. It consumes hourly, sanitized observations from a GitHub-hosted runner outside this single VM.</p>
+            <p class="hero-lede">A deliberately bounded public surface. It consumes hourly, sanitized observations from a GitHub-hosted runner outside this native cluster.</p>
             <p class="reliability-disclaimer"><strong>Current state:</strong> <span data-status-note>No fresh external status observation is available.</span> Until a fresh artifact is validated, the answer is <mark>unknown</mark>. This page never infers health from its own response.</p>
           </div>
           <aside class="metadata-card status-panel reveal reveal-delay-1" data-status-panel data-state="unknown" aria-labelledby="status-panel-title">
@@ -104,16 +104,16 @@
           <div class="section-heading reveal"><span class="section-index">04</span><h2 id="contract-title">A small<br /><em>contract.</em></h2><p class="heading-note">The checked-in fallback is safe by default; live claims require fresh, policy-bound evidence.</p></div>
           <div class="security-grid">
             <article class="security-card reveal"><span class="flow-index">freshness / current</span><h3>Unknown is valid</h3><p>The browser rejects missing, malformed, stale, or expired artifacts. A successful old observation never remains operational forever.</p></article>
-            <article class="security-card reveal reveal-delay-1"><span class="flow-index">policy / external</span><h3>Evidence travels with claims</h3><p>GitHub Actions runs the checks outside this VM and commits sanitized history. The monitoring policy is human-approved; individual observations are automated.</p></article>
+            <article class="security-card reveal reveal-delay-1"><span class="flow-index">policy / external</span><h3>Evidence travels with claims</h3><p>GitHub Actions runs the checks outside this native cluster and commits sanitized history. The monitoring policy is human-approved; individual observations are automated.</p></article>
           </div>
         </section>
 
         <section class="content-section reliability-section reliability-contact" aria-labelledby="status-contact-title">
-          <div class="contact-card reveal"><div><span class="section-index">05 / BOUNDARY</span><h2 id="status-contact-title">One VM.<br /><em>Honest limits.</em></h2></div><div class="contact-action"><p>Read the hourly monitoring policy and preserved evidence history.</p><a class="button button-primary" href="https://github.com/macel94/belacca-status/blob/main/POLICY.md" target="_blank" rel="noreferrer">Read the policy <span aria-hidden="true">↗</span></a></div></div>
+          <div class="contact-card reveal"><div><span class="section-index">05 / BOUNDARY</span><h2 id="status-contact-title">One cluster.<br /><em>Honest limits.</em></h2></div><div class="contact-action"><p>Read the hourly monitoring policy and preserved evidence history.</p><a class="button button-primary" href="https://github.com/macel94/belacca-status/blob/main/POLICY.md" target="_blank" rel="noreferrer">Read the policy <span aria-hidden="true">↗</span></a></div></div>
         </section>
       </main>
 
-      <footer class="site-footer"><span>© <span id="year"></span> Francesco Belacca</span><span class="footer-signal"><i class="status-dot"></i> external evidence / single VM</span><span><a href="/">home</a> · <a href="/reliability.html">reliability</a> · <a href="/status.html">status</a> · <a href="/privacy.html">privacy</a></span></footer>
+      <footer class="site-footer"><span>© <span id="year"></span> Francesco Belacca</span><span class="footer-signal"><i class="status-dot"></i> external evidence / native cluster</span><span><a href="/">home</a> · <a href="/reliability.html">reliability</a> · <a href="/status.html">status</a> · <a href="/privacy.html">privacy</a></span></footer>
     </div>
   </body>
 </html>
