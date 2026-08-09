@@ -82,8 +82,10 @@ test('reliability page meets basic keyboard and landmark expectations', async ()
 test('reliability copy separates current capability from planned work', async () => {
   const html = await read('reliability.html');
   assert.match(html, /not a live status page/);
-  assert.match(html, /not deployed yet/);
-  assert.match(html, /candidate signals \/ not live/);
+  assert.match(html, /policy and evidence pipeline exists/);
+  assert.match(html, /complete valid rolling 30-day measured window/);
+  assert.match(html, /30-day SLO values remain [^<]*not reportable/);
+  assert.match(html, /external journeys \/ current/);
   assert.match(html, /no scheduled encrypted off-cluster backup/);
   assert.match(html, /registry SBOM and GitHub Artifact Attestation provenance/);
   assert.match(html, /no admission or Flux verification is configured/);
@@ -94,6 +96,30 @@ test('reliability copy separates current capability from planned work', async ()
   assert.doesNotMatch(html, /all systems nominal/);
   assert.doesNotMatch(html, /169\.58\.97\.73|vmi3474918|k3d-pong|10\.43\.0\.10|45371/);
   assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
+});
+
+test('public reliability claims identify evidence limits and unproven objectives', async () => {
+  const html = await read('reliability.html');
+  const readme = await read('README.md');
+  const documents = [html, readme];
+  const markers = [
+    /policy and evidence pipeline exists/,
+    /complete valid rolling 30-day measured\s+(?:window|history)/,
+    /30-day SLO values remain\s+not\s+reportable/,
+    /external user-journey checks now cover the portfolio, Pong, and analytics\s+collector/i,
+    /authenticated dashboard checks remain unconfigured/i,
+    /Native Prometheus is private diagnostic\s+telemetry/,
+    /not external availability proof/,
+    /99%[\s\S]{0,120}internal objective, not an SLA/,
+    /no paging destination is provisioned/i,
+    /off-cluster backup/,
+    /health-aware failover/,
+    /real failure drills are claimed/,
+    /controlled-drill recovery P95 under six minutes remains unproven/
+  ];
+  for (const document of documents) {
+    for (const marker of markers) assert.match(document, marker);
+  }
 });
 
 test('reliability metadata is safe and build assets are packaged', async () => {
@@ -141,7 +167,8 @@ test('public status stays unknown until a fresh automated external observation s
   assert.match(script, /monitoring_policy/);
   assert.match(script, /valid_until/);
   assert.match(script, /Status data is unavailable or invalid/);
-  assert.match(script, /raw\.githubusercontent\.com\/macel94\/belacca-status/);
+  assert.match(script, /const remoteStatusURL = 'https:\/\/raw\.githubusercontent\.com\/macel94\/belacca-status\/main\/status\.json'/);
+  assert.doesNotMatch(script, /slo\.json/);
   assert.doesNotMatch(html, /99\.99%|all systems nominal|uptime[^<]{0,20}\d+%/i);
 });
 

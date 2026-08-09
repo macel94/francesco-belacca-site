@@ -69,14 +69,21 @@ source commit and its short form into the site as build metadata; this identifie
 the artifact but is not an availability measurement. Flux in the hosting cluster
 watches this repository and reconciles that deployment manifest.
 
-The current site does not provide application SLO telemetry, burn-rate alerts,
-scheduled off-cluster backups, verified restore automation, or a formal incident
-paging integration. The external sanitized status publisher is deployed in the
-separate `macel94/belacca-status` repository: it runs hourly GitHub-hosted
-external checks and commits sanitized status history. The reliability page
-describes SLO measurement, backups, and paging as separate gaps rather than
-implying they exist. The site fetches its fresh artifact at runtime and keeps a
-checked-in `unknown` / `not_configured` fallback.
+The policy and evidence pipeline exists, but 30-day SLO values remain not
+reportable until `belacca-status` has a complete valid rolling 30-day measured
+history. `belacca-status` publishes sanitized status observations and `slo.json`;
+the public status page still consumes its fresh `status.json` contract and keeps
+an `unknown` / `not_configured` fallback. Native Prometheus is private diagnostic
+telemetry, not external availability proof or a public SLO calculation.
+
+External user-journey checks now cover the portfolio, Pong, and analytics
+collector. Authenticated dashboard checks remain unconfigured. The 99%
+availability objective per public service over a rolling 30-day window is an
+internal objective, not an SLA. No paging destination is provisioned; no
+off-cluster backup, health-aware failover, or real failure drills are claimed. A
+separate controlled-drill recovery P95 under six minutes remains unproven. The
+reliability page describes these boundaries rather than implying that they
+exist.
 Image delivery now has a registry SBOM and GitHub Artifact Attestation
 provenance. Verify an immutable GHCR image with
 `scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
@@ -108,7 +115,11 @@ build provenance. Automatic admission or Flux verification remains a separate
 future control.
 
 The scheduled `.github/workflows/synthetic-check.yml` checks `/health` and the
-HTML shell. The separate [`macel94/belacca-status`](https://github.com/macel94/belacca-status) workflow is the hourly public status publisher. It runs outside the VM, reuses the Pong two-player journey from the sibling `cloudnativepong` repository, commits sanitized observations, and expires them after two hours.
+HTML shell. The separate [`macel94/belacca-status`](https://github.com/macel94/belacca-status)
+workflow is the hourly public status publisher. It runs outside the VM, covers
+external user journeys for the portfolio, Pong, and analytics collector, commits
+sanitized observations, and expires them after two hours. Authenticated dashboard
+checks remain unconfigured.
 
 Local dry runs require no credentials or external endpoint:
 

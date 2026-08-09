@@ -61,7 +61,7 @@
             <p class="eyebrow"><span class="prompt">&gt;_</span> reliability / systems notes <span class="cursor" aria-hidden="true"></span></p>
             <h1 id="systems-title">Reliability,<br /><em>with receipts.</em></h1>
             <p class="hero-lede">A public, deliberately bounded view of how the Belacca platform is built, delivered, protected, and improved.</p>
-            <p class="reliability-disclaimer"><strong>Current state:</strong> this is an architecture note, not a live status page. Native k3s is <mark>public production</mark> on three servers, with direct DNS round-robin across the two public edges. The former k3d edge is retired; automated SLO measurement, off-cluster backups, health-aware failover, and paging remain separate gaps and are <mark>not deployed yet</mark>.</p>
+            <p class="reliability-disclaimer"><strong>Current state:</strong> this is an architecture note, not a live status page. The policy and evidence pipeline exists: external user-journey observations are published in sanitized form, but the history is not yet a complete valid rolling 30-day measured window, so 30-day SLO values remain <mark>not reportable</mark>. Native Prometheus is private diagnostic telemetry, not external availability proof. The 99% availability target per public service is an internal objective, not an SLA; no paging destination, off-cluster backup, health-aware failover, or real failure drills are claimed.</p>
           </div>
           <aside class="metadata-card reveal reveal-delay-1" aria-labelledby="metadata-title">
             <div class="console-top"><span id="metadata-title">release://evidence</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
@@ -129,25 +129,27 @@
           <div class="section-heading reveal"><span class="section-index">04</span><h2 id="practice-title">Measure what<br /><em>users feel.</em></h2><p class="heading-note">Reliability is a feedback loop: journey → signal → objective → budget → evidence → recovery.</p></div>
           <div class="practice-layout">
             <article class="method-card reveal" aria-labelledby="method-title">
-              <span class="flow-index">slo method / proposed</span>
+              <span class="flow-index">slo method / current boundary</span>
               <h3 id="method-title">The loop</h3>
               <ol class="method-list">
                 <li><strong>Journey</strong><span>Define the user action that matters.</span></li>
                 <li><strong>SLI</strong><span>Count good and total events at the boundary.</span></li>
-                <li><strong>SLO</strong><span>Agree a target and time window with stakeholders.</span></li>
+                <li><strong>Policy</strong><span>Set an internal objective and require a complete valid rolling window before reporting it.</span></li>
                 <li><strong>Budget</strong><span>Use missed reliability as a delivery trade-off.</span></li>
                 <li><strong>Evidence</strong><span>Connect alerts, deployments, and incident notes.</span></li>
               </ol>
             </article>
             <article class="candidate-card reveal reveal-delay-1" aria-labelledby="candidate-title">
-              <span class="flow-index">candidate signals / not live</span>
-              <h3 id="candidate-title">A sensible first cut</h3>
+              <span class="flow-index">external journeys / current</span>
+              <h3 id="candidate-title">What is observed</h3>
+              <p>External user-journey checks now cover the portfolio, Pong, and analytics collector. Authenticated dashboard checks remain unconfigured.</p>
               <dl class="candidate-list">
-                <div><dt>portfolio</dt><dd>Successful external HTTPS checks for the homepage and <code>/health</code>.</dd></div>
-                <div><dt>Pong lobby</dt><dd>Successful create and join journeys, followed by an accepted WebSocket-compatible real-time session. Native WebTransport is an optional path, not a current public-ingress guarantee.</dd></div>
-                <div><dt>delivery</dt><dd>Flux source and application reconciliation health as an operational diagnostic.</dd></div>
+                <div><dt>portfolio</dt><dd>External user-journey checks cover the portfolio.</dd></div>
+                <div><dt>Pong</dt><dd>External user-journey checks cover the create, join, and WebSocket-compatible real-time path. Native WebTransport is an optional path, not a current public-ingress guarantee.</dd></div>
+                <div><dt>analytics collector</dt><dd>External user-journey checks cover the public analytics collector.</dd></div>
+                <div><dt>authenticated dashboard</dt><dd>Authenticated dashboard checks remain unconfigured.</dd></div>
               </dl>
-              <p class="planned-note"><strong>Not deployed:</strong> there is currently no Prometheus-compatible application metric layer, SLO recording rule, burn-rate alert, or paging integration. The separate external sanitized publisher supplies bounded observations to the status page, but it does not measure SLOs or page operators. Targets, windows, owners, and paging policy remain to be agreed.</p>
+              <p class="planned-note"><strong>Evidence boundary:</strong> belacca-status publishes sanitized <code>slo.json</code> evidence, but its history is not yet a complete valid rolling 30-day measured window, so 30-day SLO values remain not reportable. Native Prometheus is private diagnostic telemetry; it is not external availability proof or a public SLO calculation. The 99% availability objective per public service over a rolling 30-day window is internal, not an SLA. No paging destination is provisioned.</p>
             </article>
           </div>
         </section>
@@ -156,7 +158,7 @@
           <div class="section-heading reveal"><span class="section-index">05</span><h2 id="resilience-title">Recovery has<br /><em>limits.</em></h2><p class="heading-note">Naming the failure domain is more useful than displaying an unearned uptime number.</p></div>
           <div class="resilience-grid">
             <article class="limitation-card reveal"><span class="flow-index">backup boundary / current</span><h3>Replicated, not backed up</h3><p>Pong, GoatCounter, and Dex retain SQLite data on single-writer Longhorn-backed RWO volumes with three replicas. Replication improves node recovery, but there is still no scheduled encrypted off-cluster backup, retention policy, or verified restore job.</p><p class="warning-line">Therefore: no public RPO or RTO promise.</p></article>
-            <article class="limitation-card reveal reveal-delay-1"><span class="flow-index">recovery practice / current</span><h3>Safe first response</h3><p>Runbooks start with non-destructive inspection, preserve protected state, check user-facing routes and Flux health, and use a reviewed Git revert for application rollback. Native k3s and Longhorn services are enabled for host restart recovery; incidents are not currently backed by a paging service.</p><p class="warning-line">This page is not an incident channel.</p></article>
+            <article class="limitation-card reveal reveal-delay-1"><span class="flow-index">recovery practice / current</span><h3>Safe first response</h3><p>Runbooks start with non-destructive inspection, preserve protected state, check user-facing routes and Flux health, and use a reviewed Git revert for application rollback. Native services support host restart recovery; no paging destination is provisioned and no real failure drills are claimed.</p><p class="warning-line">A separate controlled-drill recovery P95 under six minutes remains unproven.</p></article>
             <article class="limitation-card planned-card reveal reveal-delay-2"><span class="flow-index">planned / explicitly not live</span><h3>Close the loop</h3><p>Next reliability work is to add user-journey SLO measurement and burn-rate alerts, encrypted off-cluster backups, restore verification, paging integration, authenticated browser journeys, health-aware failover, and repeatable failure drills. Each item needs runtime proof before it becomes a claim here; the external sanitized publisher is already deployed as a separate observation path.</p><p class="planned-line">planned ≠ deployed</p></article>
           </div>
         </section>
