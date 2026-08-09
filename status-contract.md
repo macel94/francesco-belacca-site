@@ -22,17 +22,21 @@ fallback and is not a live telemetry feed.
 ## Evidence boundary
 
 The remote publisher checks the public portfolio, the Pong public endpoints and
-the full two-player WebSocket-compatible journey, and the public analytics status
-endpoint. Native WebTransport is an opt-in deployment path and is not treated as
-a public monitoring prerequisite until UDP ingress is enabled.
-It stores no response bodies, room IDs, player names, addresses, cookies, tokens,
-internal hostnames, or raw exception messages. Uptime remains `not_configured`
-until at least 24 hourly observations cover the initial 24-hour window.
+full two-player WebSocket-compatible journey, the analytics `/status` and
+harmless `/count` collector paths, and portfolio alias redirects. `/count.js` is
+a supporting diagnostic; redirects are not separate SLO services. Native
+WebTransport is an opt-in deployment path and is not treated as a public
+monitoring prerequisite until UDP ingress is enabled. The internal objective is
+99% per public service over 30 days with no SLA; `slo.json` remains non-reportable
+until a complete valid rolling window exists. It stores no response bodies, room
+IDs, player names, addresses, cookies, tokens, internal hostnames, or raw
+exception messages. Authenticated dashboard checks remain unconfigured.
 
-The policy approval applies to the monitored services, thresholds, freshness TTL,
-redaction rules, and publication behavior. Individual observations are
-automated; the page does not claim a person manually approved each hourly
-result.
+The policy approval applies to the monitored services, the internal 99%/30d
+objective, thresholds, freshness TTL, redaction rules, and publication behavior.
+Individual observations are automated; the page does not claim a person
+manually approved each hourly result. The public page does not render `slo.json`
+and does not turn error-budget state into an incident or paging signal.
 
 ## Single-cluster limitation
 

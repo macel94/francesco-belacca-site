@@ -15,8 +15,8 @@ Francesco Belacca is a Senior Site Reliability Engineer based in Parma, Italy. H
 
 ## Selected work
 
-- [Belacca Platform](https://github.com/macel94/belacca-platform): A GitOps workspace orchestrating the public platform across application repositories, Kubernetes manifests, and Flux-driven delivery.
-- [Cloud Native Pong](https://pong.belacca.com/): A multiplayer game where each room runs as its own Kubernetes pod, using Go, a WebSocket-compatible default path, and opt-in WebTransport support.
+- [Belacca Platform](https://github.com/macel94/belacca-platform): A GitOps workspace for native k3s production, external 99%/30d SLO evidence, private diagnostics, incident practice, and safe disposable capacity experiments.
+- [Cloud Native Pong](https://pong.belacca.com/): A multiplayer game where each room runs as its own Kubernetes pod, using Go, a WebSocket-compatible default path, bounded aggregate telemetry, and a guarded disposable capacity workflow; WebTransport remains opt-in.
 - [EU Azure Foundry Scout](https://github.com/macel94/eu-azfoundry-scout): An automated DevOps utility that maps Azure AI Foundry model availability and EU data-residency support.
 - [Post-Quantum .NET](https://github.com/macel94/postquantumdotnettest): Benchmarks comparing classical ECDH with ML-KEM post-quantum cryptography, including TLS 1.3 handshakes.
 - [AKS 3-Tier Platform](https://github.com/macel94/AKS-3-Tier-App): A cloud-native reference architecture exploring delivery, resilience, and observability on Azure Kubernetes Service.
@@ -24,7 +24,7 @@ Francesco Belacca is a Senior Site Reliability Engineer based in Parma, Italy. H
 
 ## Reliability and systems note
 
-- [Reliability / Systems](https://francesco.belacca.com/reliability.html): A public, bounded description of the current static-site and Pong architecture, GitOps delivery path, security boundaries, SLO methodology, backup limitations, and incident/recovery practice. It explicitly labels planned capabilities and is not a live status page.
+- [Reliability / Systems](https://francesco.belacca.com/reliability.html): A public, bounded description of the native-production architecture, external SLO evidence boundary, private diagnostics, incident practice, backup limitations, and unproven recovery/failover gaps. It is not a live status page and does not claim a reportable 30-day SLO yet.
 - [Public Status](https://francesco.belacca.com/status.html): A sanitized status surface fed by hourly GitHub-hosted external observations from the separate [belacca-status repository](https://github.com/macel94/belacca-status). It expires stale data, preserves an unknown fallback, and documents the single-native-cluster limitation.
 
 ## Public profiles

@@ -53,10 +53,10 @@ curl -fsS http://localhost:8080/health
 - CSS grid, terminal panels, telemetry cues, and restrained motion for a
   professional but slightly hacker/matrix character.
 - Responsive layout and a complete `prefers-reduced-motion` path.
-- Reliability page with current architecture, GitOps delivery, security boundaries,
-  SLO methodology, backup limitations, and incident/recovery practice. Planned
-  controls are labeled as planned; no secrets or sensitive host details are
-  published.
+- Reliability page with current native-production architecture, GitOps delivery,
+  external 99%/30d SLO evidence boundaries, private diagnostics, incident
+  practice, backup limitations, and recovery/failover gaps. Planned controls are
+  labeled as planned; no secrets or sensitive host details are published.
 - No third-party fonts, runtime analytics vendors, or client-side framework. The status page has one explicit read-only dependency on the raw GitHub status artifact.
 - Self-hosted, cookie-free visitor analytics are served through the same-origin `/count` endpoint; see [`privacy.html`](privacy.html). The private dashboard is at `https://stats.belacca.com`.
 
