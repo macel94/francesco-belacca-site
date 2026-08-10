@@ -4,10 +4,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-    cooldown:
-      default-days: 7
+      interval: daily
     groups:
       npm-deps:
         patterns:
@@ -17,10 +14,7 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-    cooldown:
-      default-days: 7
+      interval: daily
     groups:
       docker-deps:
         patterns:
@@ -30,10 +24,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
-    cooldown:
-      default-days: 7
+      interval: daily
     groups:
       github-actions:
         patterns:
