@@ -22,7 +22,7 @@ The former single-host `k3d-pong` runtime on `.73` was retired after cutover.
 Native production is not a development sandbox; use local mode or an explicitly
 disposable isolated environment for development. See the parent
 [`plan.md`](https://github.com/macel94/belacca-platform/blob/main/plan.md),
-sibling [`belacca-infrastructure`](https://github.com/macel94/belacca-infrastructure),
+[`belacca-infrastructure`](https://github.com/macel94/belacca-infrastructure),
 and [`belacca-gitops`](https://github.com/macel94/belacca-gitops).
 
 ## Local development
