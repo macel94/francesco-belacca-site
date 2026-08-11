@@ -307,7 +307,7 @@ test('animation layer includes a reduced-motion path', async () => {
   assert.match(js, /IntersectionObserver/);
 });
 
-test('animated layers redraw cleanly and keep the marquee seamless', async () => {
+test('animated layers stay visible, multi-character, and reduced-motion aware', async () => {
   const html = await read('index.html');
   const css = await read('styles.css');
   const js = await read('app.js');
@@ -330,21 +330,44 @@ test('animated layers redraw cleanly and keep the marquee seamless', async () =>
   assert.match(groupRule, /font:\s*[^;]*var\(--mono\)/);
   assert.match(css, /@keyframes marquee\s*\{[^}]*translateX\(-50%\)/s);
 
-  const matrixColumns = [...html.matchAll(/class="matrix-column"/g)];
+  const matrixColumns = [...html.matchAll(/<span class="matrix-column"[^>]*>([\s\S]*?)<\/span>/g)];
   assert.ok(matrixColumns.length >= 20);
+  matrixColumns.forEach(([, content]) => {
+    const glyphs = content.replace(/<br\s*\/>/g, '').trim();
+    assert.ok([...glyphs].length >= 3, 'each Matrix column must contain multiple glyphs');
+  });
   assert.match(html, /class="matrix" id="matrix" aria-hidden="true"/);
-  assert.match(html, /matrix-column[\s\S]*<br \/>[\s\S]*<br \/>/);
   assert.doesNotMatch(html, /<canvas class="matrix"/);
   assert.doesNotMatch(js, /querySelector\('#matrix'\)/);
 
+  const bodyRule = css.match(/body\s*\{[^}]*\}/s)?.[0];
   const matrixRule = css.match(/\.matrix\s*\{[^}]*\}/s)?.[0];
   const columnRule = css.match(/\.matrix-column\s*\{[^}]*\}/s)?.[0];
+  const gradientRule = css.match(/@supports\s*\(\(-webkit-background-clip:\s*text\)\s+or\s+\(background-clip:\s*text\)\)\s*\{[\s\S]*?\.matrix-column\s*\{[^}]*\}/s)?.[0];
+  const noiseRule = css.match(/\.noise\s*\{[^}]*\}/s)?.[0];
+  const shellRule = css.match(/\.shell\s*\{[^}]*\}/s)?.[0];
+  assert.ok(bodyRule);
   assert.ok(matrixRule);
   assert.ok(columnRule);
+  assert.ok(gradientRule);
+  assert.ok(noiseRule);
+  assert.ok(shellRule);
+  assert.match(bodyRule, /isolation:\s*isolate/);
+  assert.match(matrixRule, /z-index:\s*0/);
+  assert.doesNotMatch(matrixRule, /z-index:\s*-/);
+  assert.doesNotMatch(matrixRule, /contain\s*:/);
+  assert.match(matrixRule, /pointer-events:\s*none/);
+  assert.match(noiseRule, /z-index:\s*1/);
+  assert.match(noiseRule, /pointer-events:\s*none/);
+  assert.match(shellRule, /z-index:\s*2/);
   assert.match(matrixRule, /opacity:\s*\.6/);
-  assert.match(columnRule, /var\(--green-neon\)/);
-  assert.match(columnRule, /linear-gradient/);
+  assert.match(columnRule, /color:\s*var\(--green-neon\)/);
+  assert.match(columnRule, /background:\s*none/);
+  assert.match(gradientRule, /linear-gradient/);
+  assert.match(gradientRule, /background-clip:\s*text/);
+  assert.match(gradientRule, /-webkit-text-fill-color:\s*transparent/);
   assert.match(columnRule, /animation:\s*matrix-fall\s+var\(--duration\)\s+linear\s+var\(--delay\)\s+infinite/);
+  assert.match(columnRule, /will-change:\s*transform/);
   assert.match(css, /@keyframes matrix-fall/);
   assert.match(css, /translate3d\(0, 255vh, 0\)/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.matrix, \.marquee-track \{ display: none; \}/);
