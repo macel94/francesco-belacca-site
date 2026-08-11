@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
   <title id="title">Francesco Belacca</title>
-  <desc id="desc">FB monogram in a systems-console style</desc>
-  <rect width="64" height="64" rx="14" fill="#030507"/>
-  <rect x="3" y="3" width="58" height="58" rx="11" fill="none" stroke="#b7f34a" stroke-opacity=".7" stroke-width="2"/>
-  <path d="M16 18h24M16 27h16M16 36h20M16 45h12" fill="none" stroke="#557f70" stroke-width="2" stroke-linecap="round"/>
-  <path d="M21 15v34M21 18h12c5 0 7 2 7 5s-2 5-7 5H21m0 0h14c5 0 8 3 8 7s-3 8-8 8H21" fill="none" stroke="#b7f34a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M48 17v30" stroke="#79e6d0" stroke-width="3" stroke-linecap="round"/>
-  <circle cx="48" cy="13" r="2.5" fill="#79e6d0"/>
+  <desc id="desc">A compact FB signal monogram</desc>
+  <rect width="64" height="64" rx="16" fill="#030507"/>
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="#21443f"/>
+  <rect x="4" y="4" width="56" height="56" rx="13" fill="#071015"/>
+  <path d="M16 48V16h18M16 32h15" fill="none" stroke="#c8ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M39 16v32m0-32h7c5 0 8 3 8 7.5S51 31 46 31h-7m0 0h8c5 0 8 3.5 8 8.5S52 48 47 48h-8" fill="none" stroke="#79e6d0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="51" cy="10" r="2.5" fill="#c8ff3d"/>
 </svg>

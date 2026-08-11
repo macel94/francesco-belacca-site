@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const root = resolve(import.meta.dirname, '..');
 const read = (file) => readFile(resolve(root, file), 'utf8');
+const readBytes = (file) => readFile(resolve(root, file));
 
 test('site has a semantic document shell and canonical metadata', async () => {
   const html = await read('index.html');
@@ -212,14 +213,20 @@ test('site discovery assets are linked and shipped', async () => {
   const llms = await read('llms.txt');
   const sitemap = await read('sitemap.xml');
   const privacy = await read('privacy.html');
-  assert.match(html, /href="\/favicon\.svg" type="image\/svg\+xml"/);
-  assert.match(html, /href="\/favicon\.ico" type="image\/x-icon"/);
+  for (const document of ['index.html', 'privacy.html', 'reliability.html', 'status.html']) {
+    const documentHtml = await read(document);
+    assert.match(documentHtml, /href="\/favicon\.svg" type="image\/svg\+xml"/);
+    assert.match(documentHtml, /href="\/favicon\.ico" type="image\/x-icon" sizes="16x16 32x32 48x48"/);
+    assert.match(documentHtml, /rel="apple-touch-icon" href="\/apple-touch-icon\.png" sizes="180x180"/);
+  }
   assert.match(html, /href="\/site\.webmanifest"/);
-  for (const asset of ['index.html', 'reliability.html', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon.ico', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
+  for (const asset of ['index.html', 'reliability.html', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
   assert.match(dockerfile, /ARG BUILD_SHA=dev/);
   assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
   assert.match(manifest, /"theme_color": "#030507"/);
+  assert.match(manifest, /"src": "\/icon-192\.png"/);
+  assert.match(manifest, /"src": "\/icon-512\.png"/);
   assert.match(robots, /Allow: \/\n/);
   assert.match(robots, /Sitemap: https:\/\/francesco\.belacca\.com\/sitemap\.xml/);
   assert.match(llms, /^# Francesco Belacca/m);
@@ -228,6 +235,38 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/privacy\.html<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/reliability\.html<\/loc>/);
+});
+
+test('favicon binaries use browser-safe square dimensions', async () => {
+  const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const pngDimensions = async (file, expected) => {
+    const bytes = await readBytes(file);
+    assert.deepEqual(bytes.subarray(0, 8), pngSignature);
+    assert.equal(bytes.readUInt32BE(16), expected);
+    assert.equal(bytes.readUInt32BE(20), expected);
+    assert.equal(bytes[24], 8);
+    assert.equal(bytes[25], 6);
+  };
+
+  await pngDimensions('apple-touch-icon.png', 180);
+  await pngDimensions('icon-192.png', 192);
+  await pngDimensions('icon-512.png', 512);
+
+  const ico = await readBytes('favicon.ico');
+  assert.equal(ico.readUInt16LE(0), 0);
+  assert.equal(ico.readUInt16LE(2), 1);
+  assert.equal(ico.readUInt16LE(4), 3);
+  for (const [index, size] of [16, 32, 48].entries()) {
+    const entry = 6 + index * 16;
+    assert.equal(ico[entry], size);
+    assert.equal(ico[entry + 1], size);
+    assert.equal(ico.readUInt16LE(entry + 4), 1);
+    assert.equal(ico.readUInt16LE(entry + 6), 32);
+    const payloadOffset = ico.readUInt32LE(entry + 12);
+    assert.deepEqual(ico.subarray(payloadOffset, payloadOffset + 8), pngSignature);
+    assert.equal(ico.readUInt32BE(payloadOffset + 16), size);
+    assert.equal(ico.readUInt32BE(payloadOffset + 20), size);
+  }
 });
 
 test('navigation remains usable on keyboard and compact screens', async () => {
