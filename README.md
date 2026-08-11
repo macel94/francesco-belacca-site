@@ -13,7 +13,8 @@ status page intentionally reads one public, sanitized artifact from GitHub.
 ## Platform production state
 
 The platform now runs on the three-server native k3s production cluster.
-Cloudflare DNS-only records for application hosts contain `.41` and `.42`, and
+Cloudflare DNS-only records for application hosts contain `.73`, `.41`, and
+`.42`, and
 native Flux, Traefik, cert-manager, Longhorn, Pong, portfolio, analytics, Dex,
 Headlamp, and Flux Web are operational. Pong, GoatCounter, and Dex state was
 quiesced, integrity-checked, and restored into native Longhorn-backed RWO PVCs.
