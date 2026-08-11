@@ -52,8 +52,8 @@
   };
 
   const draw = () => {
-    context.fillStyle = '#030507';
-    context.fillRect(0, 0, width, height);
+    // Keep this layer transparent: every frame contains only the current glyphs.
+    context.clearRect(0, 0, width, height);
     context.font = `${fontSize}px monospace`;
     context.textBaseline = 'top';
     drops.forEach((drop, index) => {
@@ -61,8 +61,10 @@
       const x = index * cellSize;
       const y = drop * cellSize;
       const isVisible = y >= 0 && y <= height;
-      context.fillStyle = isVisible ? 'rgba(232, 255, 210, .92)' : 'rgba(116, 185, 61, .55)';
-      context.fillText(glyph, x, y);
+      if (isVisible) {
+        context.fillStyle = 'rgba(232, 255, 210, .92)';
+        context.fillText(glyph, x, y);
+      }
       if (y > height && Math.random() > .975) drops[index] = Math.random() * -24;
       drops[index] += .34;
     });

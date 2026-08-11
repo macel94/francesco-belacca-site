@@ -291,14 +291,36 @@ test('animation layer includes a reduced-motion path', async () => {
   assert.match(js, /visibilitychange/);
 });
 
-test('marquee stays bright and matrix frames clear old glyphs', async () => {
+test('animated layers redraw cleanly and keep the marquee seamless', async () => {
+  const html = await read('index.html');
   const css = await read('styles.css');
   const js = await read('app.js');
-  assert.match(css, /--green-neon:\s*#c8ff3d/);
-  assert.match(css, /\.marquee\s*\{[^}]*color:\s*var\(--green-neon\)/s);
-  assert.match(css, /\.marquee-group\s*\{[^}]*font:\s*500 10px var\(--mono\)/s);
-  assert.match(js, /context\.fillStyle = '#030507';\s*context\.fillRect\(0, 0, width, height\);/);
-  assert.doesNotMatch(js, /context\.fillStyle = 'rgba\(3, 5, 7, \.11\)'/);
+  const groups = [...html.matchAll(/<div class="marquee-group"(?: aria-hidden="true")?>([\s\S]*?)<\/div>/g)].map((match) => match[1]);
+  assert.equal(groups.length, 2);
+  assert.equal(groups[0], groups[1]);
+  assert.match(html, /<section class="marquee" aria-hidden="true">[\s\S]*<div class="marquee-track">/);
+  assert.match(html, /<div class="marquee-group" aria-hidden="true">/);
+
+  const marqueeRule = css.match(/\.marquee\s*\{[^}]*\}/s)?.[0];
+  const trackRule = css.match(/\.marquee-track\s*\{[^}]*\}/s)?.[0];
+  const groupRule = css.match(/\.marquee-group\s*\{[^}]*\}/s)?.[0];
+  assert.ok(marqueeRule);
+  assert.ok(trackRule);
+  assert.ok(groupRule);
+  assert.match(marqueeRule, /overflow:\s*hidden/);
+  assert.match(marqueeRule, /color:\s*var\(--green(?:-neon)?\)/);
+  assert.match(trackRule, /width:\s*max-content/);
+  assert.match(trackRule, /animation:\s*marquee\s+[^;]*linear\s+infinite/);
+  assert.match(groupRule, /font:\s*[^;]*var\(--mono\)/);
+  assert.match(css, /@keyframes marquee\s*\{[^}]*translateX\(-50%\)/s);
+
+  const drawStart = js.indexOf('const draw = () =>');
+  const draw = js.slice(drawStart, js.indexOf('  window.addEventListener', drawStart));
+  assert.match(draw, /context\.clearRect\(0, 0, width, height\);/);
+  assert.ok(draw.indexOf('clearRect') < draw.indexOf('fillText'));
+  assert.match(draw, /if \(isVisible\) \{/);
+  assert.doesNotMatch(draw, /context\.fillRect/);
+  assert.doesNotMatch(draw, /rgba\(3,\s*5,\s*7/);
 });
 
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {
