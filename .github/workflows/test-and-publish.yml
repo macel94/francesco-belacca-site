@@ -52,7 +52,7 @@ jobs:
           node-version: 22
       - run: npm test
       - name: Build container
-        run: docker build --build-arg BUILD_SHA="${GITHUB_SHA}" --tag francesco-belacca-site:test .
+        run: docker build --build-arg BUILD_SHA="${GITHUB_SHA}" --build-arg BUILD_RUN_ID="${GITHUB_RUN_ID}" --tag francesco-belacca-site:test .
 
   publish:
     name: Publish immutable image
@@ -83,6 +83,7 @@ jobs:
           push: true
           build-args: |
             BUILD_SHA=${{ github.sha }}
+            BUILD_RUN_ID=${{ github.run_id }}
           tags: |
             ghcr.io/macel94/francesco-belacca-site:sha-${{ github.sha }}
             ghcr.io/macel94/francesco-belacca-site:latest

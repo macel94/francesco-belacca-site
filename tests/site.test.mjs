@@ -13,11 +13,23 @@ test('site has a semantic document shell and canonical metadata', async () => {
   assert.match(html, /<main id="top">/);
   assert.match(html, /<h1 id="hero-title">/);
   assert.match(html, /class="build-version"/);
+  assert.match(html, /href="__BUILD_RUN_URL__"/);
   assert.match(html, /__BUILD_SHA__/);
   assert.match(html, /__BUILD_SHA_SHORT__/);
   assert.match(html, /https:\/\/francesco\.belacca\.com\//);
   assert.match(html, /Cloud Native Pong/);
   assert.match(html, /mailto:francesco\.belacca@hotmail\.it/);
+});
+
+test('each public page exposes the build run link', async () => {
+  for (const file of ['index.html', 'reliability.html', 'status.html']) {
+    const html = await read(file);
+    const links = [...html.matchAll(/<a class="build-version" href="([^"]+)"[^>]*>build <code>([^<]+)<\/code>/g)];
+    assert.equal(links.length, 1, `${file} should expose one build link`);
+    assert.equal(links[0][1], '__BUILD_RUN_URL__');
+    assert.equal(links[0][2], '__BUILD_SHA_SHORT__');
+    assert.match(links[0][0], /__BUILD_SHA__/);
+  }
 });
 
 test('analytics stays first-party and cookie-free', async () => {
@@ -130,6 +142,11 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   const caddy = await read('Caddyfile');
   assert.match(html, /__BUILD_SHA__/);
   assert.match(html, /__BUILD_SHA_SHORT__/);
+  assert.match(html, /href="__BUILD_RUN_URL__"/);
+  assert.match(dockerfile, /ARG BUILD_RUN_ID=local/);
+  assert.match(dockerfile, /__BUILD_RUN_URL__/);
+  assert.match(dockerfile, /actions\/runs/);
+  assert.match(workflow, /BUILD_RUN_ID=\$\{\{ github\.run_id \}\}/);
   assert.match(dockerfile, /COPY index\.html reliability\.html status\.html privacy\.html/);
   assert.match(dockerfile, /COPY Caddyfile \/etc\/caddy\/Caddyfile/);
   assert.match(dockerfile, /\/srv\/index\.html/);
@@ -288,7 +305,6 @@ test('animation layer includes a reduced-motion path', async () => {
   assert.match(css, /prefers-reduced-motion/);
   assert.match(js, /prefers-reduced-motion/);
   assert.match(js, /IntersectionObserver/);
-  assert.match(js, /visibilitychange/);
 });
 
 test('animated layers redraw cleanly and keep the marquee seamless', async () => {
@@ -314,13 +330,24 @@ test('animated layers redraw cleanly and keep the marquee seamless', async () =>
   assert.match(groupRule, /font:\s*[^;]*var\(--mono\)/);
   assert.match(css, /@keyframes marquee\s*\{[^}]*translateX\(-50%\)/s);
 
-  const drawStart = js.indexOf('const draw = () =>');
-  const draw = js.slice(drawStart, js.indexOf('  window.addEventListener', drawStart));
-  assert.match(draw, /context\.clearRect\(0, 0, width, height\);/);
-  assert.ok(draw.indexOf('clearRect') < draw.indexOf('fillText'));
-  assert.match(draw, /if \(isVisible\) \{/);
-  assert.doesNotMatch(draw, /context\.fillRect/);
-  assert.doesNotMatch(draw, /rgba\(3,\s*5,\s*7/);
+  const matrixColumns = [...html.matchAll(/class="matrix-column"/g)];
+  assert.ok(matrixColumns.length >= 20);
+  assert.match(html, /class="matrix" id="matrix" aria-hidden="true"/);
+  assert.match(html, /matrix-column[\s\S]*<br \/>[\s\S]*<br \/>/);
+  assert.doesNotMatch(html, /<canvas class="matrix"/);
+  assert.doesNotMatch(js, /querySelector\('#matrix'\)/);
+
+  const matrixRule = css.match(/\.matrix\s*\{[^}]*\}/s)?.[0];
+  const columnRule = css.match(/\.matrix-column\s*\{[^}]*\}/s)?.[0];
+  assert.ok(matrixRule);
+  assert.ok(columnRule);
+  assert.match(matrixRule, /opacity:\s*\.6/);
+  assert.match(columnRule, /var\(--green-neon\)/);
+  assert.match(columnRule, /linear-gradient/);
+  assert.match(columnRule, /animation:\s*matrix-fall\s+var\(--duration\)\s+linear\s+var\(--delay\)\s+infinite/);
+  assert.match(css, /@keyframes matrix-fall/);
+  assert.match(css, /translate3d\(0, 255vh, 0\)/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.matrix, \.marquee-track \{ display: none; \}/);
 });
 
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {

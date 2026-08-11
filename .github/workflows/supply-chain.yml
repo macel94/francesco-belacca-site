@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build local image
-        run: docker build --build-arg BUILD_SHA="${GITHUB_SHA}" --tag "$IMAGE" .
+        run: docker build --build-arg BUILD_SHA="${GITHUB_SHA}" --build-arg BUILD_RUN_ID="${GITHUB_RUN_ID}" --tag "$IMAGE" .
       - name: Generate image SBOM
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
         with:
