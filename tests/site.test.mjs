@@ -252,6 +252,16 @@ test('animation layer includes a reduced-motion path', async () => {
   assert.match(js, /visibilitychange/);
 });
 
+test('marquee stays bright and matrix frames clear old glyphs', async () => {
+  const css = await read('styles.css');
+  const js = await read('app.js');
+  assert.match(css, /--green-neon:\s*#c8ff3d/);
+  assert.match(css, /\.marquee\s*\{[^}]*color:\s*var\(--green-neon\)/s);
+  assert.match(css, /\.marquee-group\s*\{[^}]*font:\s*500 10px var\(--mono\)/s);
+  assert.match(js, /context\.fillStyle = '#030507';\s*context\.fillRect\(0, 0, width, height\);/);
+  assert.doesNotMatch(js, /context\.fillStyle = 'rgba\(3, 5, 7, \.11\)'/);
+});
+
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {
   const dockerfile = await read('Dockerfile');
   const caddy = await read('Caddyfile');

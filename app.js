@@ -52,7 +52,7 @@
   };
 
   const draw = () => {
-    context.fillStyle = 'rgba(3, 5, 7, .11)';
+    context.fillStyle = '#030507';
     context.fillRect(0, 0, width, height);
     context.font = `${fontSize}px monospace`;
     context.textBaseline = 'top';
