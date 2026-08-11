@@ -219,7 +219,7 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(dockerfile, /ARG BUILD_SHA=dev/);
   assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
-  assert.match(manifest, /"theme_color": "#070a0e"/);
+  assert.match(manifest, /"theme_color": "#030507"/);
   assert.match(robots, /Allow: \/\n/);
   assert.match(robots, /Sitemap: https:\/\/francesco\.belacca\.com\/sitemap\.xml/);
   assert.match(llms, /^# Francesco Belacca/m);

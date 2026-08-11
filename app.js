@@ -29,7 +29,9 @@
   if (!canvas || prefersReducedMotion) return;
   const context = canvas.getContext('2d');
   if (!context) return;
-  const glyphs = '01アイウエオ{}[]<>/\\$#:+-*';
+  const glyphs = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const cellSize = 24;
+  const fontSize = 16;
   let width = 0;
   let height = 0;
   let columns = 0;
@@ -45,22 +47,24 @@
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    columns = Math.ceil(width / 22);
-    drops = Array.from({ length: columns }, () => Math.random() * -40);
+    columns = Math.ceil(width / cellSize);
+    drops = Array.from({ length: columns }, (_, index) => Math.random() * -40 - (index % 7) * 2);
   };
 
   const draw = () => {
-    context.fillStyle = 'rgba(7, 10, 14, .075)';
+    context.fillStyle = 'rgba(3, 5, 7, .11)';
     context.fillRect(0, 0, width, height);
-    context.font = '11px monospace';
+    context.font = `${fontSize}px monospace`;
+    context.textBaseline = 'top';
     drops.forEach((drop, index) => {
       const glyph = glyphs[Math.floor(Math.random() * glyphs.length)];
-      const x = index * 22;
-      const y = drop * 22;
-      context.fillStyle = index % 13 === 0 ? 'rgba(183, 243, 74, .52)' : 'rgba(85, 159, 130, .22)';
+      const x = index * cellSize;
+      const y = drop * cellSize;
+      const isVisible = y >= 0 && y <= height;
+      context.fillStyle = isVisible ? 'rgba(232, 255, 210, .92)' : 'rgba(116, 185, 61, .55)';
       context.fillText(glyph, x, y);
-      if (y > height && Math.random() > .975) drops[index] = Math.random() * -20;
-      drops[index] += .25;
+      if (y > height && Math.random() > .975) drops[index] = Math.random() * -24;
+      drops[index] += .34;
     });
     frame = window.requestAnimationFrame(draw);
   };
