@@ -299,6 +299,21 @@ test('navigation remains usable on keyboard and compact screens', async () => {
   assert.match(js, /removeAttribute\('open'\)/);
 });
 
+test('hamburger headers use a non-overlapping mobile-only arrangement', async () => {
+  const css = await read('styles.css');
+  assert.match(css, /\.site-header \{ display: flex;/);
+  assert.match(css, /@media \(max-width: 650px\) \{ \.mobile-header \{ display: grid; grid-template-columns: minmax\(0, 1fr\) auto; grid-template-areas: "brand status" "build menu";/);
+  assert.match(css, /\.mobile-header \.header-right \{ display: contents; \}/);
+  assert.match(css, /\.mobile-header \.build-version \{ grid-area: build;/);
+  assert.match(css, /\.mobile-header \.status-pill \{ grid-area: status;/);
+  assert.match(css, /\.mobile-header \.mobile-menu \{ grid-area: menu;/);
+
+  for (const file of ['index.html', 'reliability.html', 'status.html']) {
+    const html = await read(file);
+    assert.match(html, /<header class="site-header mobile-header">/);
+  }
+});
+
 test('animation layer includes a reduced-motion path', async () => {
   const css = await read('styles.css');
   const js = await read('app.js');
