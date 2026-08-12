@@ -27,6 +27,8 @@
         flush_interval -1
     }
 
+    @homepage path /
+    header @homepage Cache-Control "no-cache, must-revalidate"
     @countjs path /count.js
     header @countjs Cache-Control "public, max-age=86400, must-revalidate"
     @appjs path /app.js

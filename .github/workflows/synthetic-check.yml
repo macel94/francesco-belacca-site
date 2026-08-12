@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SYNTHETIC_SITE_URL: ${{ vars.SYNTHETIC_SITE_URL }}
+      SYNTHETIC_ALIAS_URLS: ${{ vars.SYNTHETIC_ALIAS_URLS }}
+      SYNTHETIC_REDIRECT_PATHS: ${{ vars.SYNTHETIC_REDIRECT_PATHS }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check configured site endpoint

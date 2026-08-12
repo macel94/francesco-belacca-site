@@ -70,21 +70,27 @@ source commit and its short form into the site as build metadata; this identifie
 the artifact but is not an availability measurement. Flux in the hosting cluster
 watches this repository and reconciles that deployment manifest.
 
-The policy and evidence pipeline exists, but 30-day SLO values remain not
-reportable until `belacca-status` has a complete valid rolling 30-day measured
-history. `belacca-status` publishes sanitized status observations and `slo.json`;
+The policy and evidence pipeline exists. The durable portfolio SLO contract is [`portfolio-slo.json`](portfolio-slo.json), with the operator procedure in [`docs/portfolio-reliability-checks.md`](docs/portfolio-reliability-checks.md):
+one external probe is one total event, and it is good only when both `/health`
+and `/` return their expected successful responses. The 99% target is an internal objective, not an SLA. The probe also supports
+out-of-band alias and path-preserving redirect assertions. 30-day SLO values remain not reportable until `belacca-status` has a complete valid rolling 30-day measured history. `belacca-status` publishes sanitized status observations and `slo.json`;
 the public status page still consumes its fresh `status.json` contract and keeps
 an `unknown` / `not_configured` fallback. Native Prometheus is private diagnostic
 telemetry, not external availability proof or a public SLO calculation.
 
-External user-journey checks now cover the portfolio, Pong, and analytics
-collector. Authenticated dashboard checks remain unconfigured. The 99%
-availability objective per public service over a rolling 30-day window is an
-internal objective, not an SLA. No paging destination is provisioned; no
+The portfolio synthetic checks health, homepage HTML/canonical metadata,
+cache freshness, and (when configured out of band) aliases plus path/query
+preservation. GoatCounter is deliberately outside the primary availability
+SLI: `scripts/runtime-check.sh` runs a disposable site with a failing analytics
+upstream and proves that `/health` and `/` still work. Authenticated dashboard
+checks remain unconfigured. No paging destination is provisioned; no
 off-cluster backup, health-aware failover, or real failure drills are claimed. A
-separate controlled-drill recovery P95 under six minutes remains unproven. The
-reliability page describes these boundaries rather than implying that they
-exist.
+separate controlled-drill recovery P95 under six minutes remains unproven.
+`scripts/gitops-rollback-check.sh` proves reviewed Git revert recovery of the
+Kustomize desired image tag in an isolated repository; a production Flux
+reconciliation drill and external observation are operator follow-up, not
+claimed evidence. The reliability page describes these boundaries rather than
+implying that they exist.
 Image delivery now has a registry SBOM and GitHub Artifact Attestation
 provenance. Verify an immutable GHCR image with
 `scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
@@ -115,12 +121,11 @@ image digest identifies exact bytes; the GitHub attestation provides signed
 build provenance. Automatic admission or Flux verification remains a separate
 future control.
 
-The scheduled `.github/workflows/synthetic-check.yml` checks `/health` and the
-HTML shell. The separate [`macel94/belacca-status`](https://github.com/macel94/belacca-status)
-workflow is the hourly public status publisher. It runs outside the VM, covers
-external user journeys for the portfolio, Pong, and analytics collector, commits
-sanitized observations, and expires them after two hours. Authenticated dashboard
-checks remain unconfigured.
+The scheduled `.github/workflows/synthetic-check.yml` runs the portfolio SLI
+probe for `/health` and `/`, and can assert aliases/path-preserving redirects
+when `SYNTHETIC_ALIAS_URLS` is configured as an out-of-band variable. The
+workflow safely skips when no canonical URL is configured. The separate [`macel94/belacca-status`](https://github.com/macel94/belacca-status)
+workflow is the hourly public status publisher. It runs outside the VM; external user-journey checks now cover the portfolio, Pong, and analytics collector, commit sanitized observations, and expire them after two hours. Authenticated dashboard checks remain unconfigured.
 
 Local dry runs require no credentials or external endpoint:
 
@@ -129,6 +134,8 @@ Local dry runs require no credentials or external endpoint:
 ./scripts/supply-chain.sh scan --dry-run
 ./scripts/verify-attestation.sh ghcr.io/macel94/francesco-belacca-site@sha256:$(printf '0%.0s' {1..64}) --dry-run
 ./scripts/synthetic-check.sh --dry-run
+./scripts/runtime-check.sh --dry-run
+./scripts/gitops-rollback-check.sh --dry-run
 ```
 
 ### Evidence and AI-assistance boundary

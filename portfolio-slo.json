@@ -1,0 +1,73 @@
+{
+  "$schema": "./portfolio-slo.schema.json",
+  "schema_version": "belacca.portfolio-slo.v1",
+  "service": "portfolio",
+  "owner": "francesco-belacca-site",
+  "objective": {
+    "target": 0.99,
+    "window": "30d",
+    "classification": "internal_objective",
+    "sla": false
+  },
+  "measurement": {
+    "state": "not_reportable",
+    "source": "external_user_journey",
+    "source_repository": "https://github.com/macel94/belacca-status",
+    "reason": "A complete valid rolling 30-day observation history is not available in this repository.",
+    "build_metadata_is_evidence": false
+  },
+  "sli": {
+    "id": "portfolio_user_journey_availability",
+    "unit": "ratio",
+    "good_event": "One scheduled external probe receives HTTP 200 from /health with body ok and HTTP 200 from / with a valid HTML document and canonical URL.",
+    "total_event": "One scheduled external probe attempts both /health and / as one portfolio journey.",
+    "calculation": "good_events / total_events",
+    "availability_boundary": "The public HTTPS route and static portfolio response; the same-origin analytics dependency is not part of the primary availability event.",
+    "checks": [
+      {
+        "id": "health",
+        "path": "/health",
+        "method": "GET",
+        "expected_status": 200,
+        "expected_body": "ok",
+        "cache_expectation": "no-store"
+      },
+      {
+        "id": "homepage",
+        "path": "/",
+        "method": "GET",
+        "expected_status": 200,
+        "expected_body_markers": ["<!doctype html", "https://francesco.belacca.com/"],
+        "cache_expectation": "must-revalidate"
+      }
+    ]
+  },
+  "journey_assertions": {
+    "canonical_host": "https://francesco.belacca.com",
+    "aliases": ["https://belacca.com", "https://www.belacca.com", "https://www.francesco.belacca.com"],
+    "redirect_status": [301, 308],
+    "path_and_query_preserved": true,
+    "configured_in": "SYNTHETIC_ALIAS_URLS and SYNTHETIC_REDIRECT_PATHS",
+    "not_reported_as_separate_services": true
+  },
+  "dependency_policy": {
+    "id": "goatcounter_same_origin_proxy",
+    "path": "/count",
+    "failure_behavior": "Analytics requests may fail or return 5xx while /health and / remain available.",
+    "primary_availability_impact": "excluded",
+    "diagnostic_check": "scripts/runtime-check.sh runs the image with the analytics upstream deliberately unreachable and rechecks health and homepage.",
+    "browser_behavior": "count.js is asynchronous and has no required response dependency for rendering the portfolio."
+  },
+  "freshness_policy": {
+    "homepage_cache_control": "no-cache, must-revalidate",
+    "health_cache_control": "no-store",
+    "build_identifier_role": "diagnostic artifact identity only; never availability evidence",
+    "synthetic_assertion": "The canonical homepage response is checked without following redirects and must expose a revalidation directive."
+  },
+  "rollback": {
+    "method": "reviewed_git_revert",
+    "desired_state": "deploy/kustomization.yaml image tag",
+    "validator": "scripts/gitops-rollback-check.sh",
+    "runtime_boundary": "The local validator proves declarative desired-state recovery; production Flux reconciliation requires operator evidence and is not claimed here."
+  }
+}
