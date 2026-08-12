@@ -11,4 +11,4 @@ resources:
 images:
   - name: francesco-belacca-site
     newName: ghcr.io/macel94/francesco-belacca-site
-    newTag: sha-858f089a87a22362ffffe16f35b3baa51d95b166
+    newTag: sha-803dc5284f923dfb87aaeee82391058799631798
