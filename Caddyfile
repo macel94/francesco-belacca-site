@@ -21,11 +21,6 @@
     # service. The upstream Host is intentionally the public stats hostname.
     # Caddy's reverse_proxy preserves and appends X-Forwarded-For by default.
     @count path /count
-    reverse_proxy @count goatcounter.analytics.svc.cluster.local {
-        header_up Host stats.belacca.com
-        header_up X-Real-IP {remote_host}
-        flush_interval -1
-    }
 
     @homepage path /
     header @homepage Cache-Control "no-cache, must-revalidate"
@@ -49,6 +44,13 @@
             header Cache-Control "no-store"
             header Content-Type "text/plain; charset=utf-8"
             respond "ok" 200
+        }
+        handle @count {
+            reverse_proxy goatcounter.analytics.svc.cluster.local {
+                header_up Host stats.belacca.com
+                header_up X-Real-IP {remote_host}
+                flush_interval -1
+            }
         }
         try_files {path} {path}/ /index.html
         file_server

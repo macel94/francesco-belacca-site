@@ -44,6 +44,7 @@ test('analytics stays first-party and cookie-free', async () => {
   assert.match(tracker, /GoatCounter/);
   assert.doesNotMatch(tracker, /gc\.zgo\.at|zgo\.at\/count/);
   assert.match(caddy, /@count path \/count/);
+  assert.match(caddy, /handle @count\s+\{\s+reverse_proxy goatcounter\.analytics\.svc\.cluster\.local/s);
   assert.match(caddy, /goatcounter\.analytics\.svc\.cluster\.local/);
   assert.match(caddy, /header_up Host stats\.belacca\.com/);
   assert.match(caddy, /preserves and appends X-Forwarded-For by default/);
@@ -418,6 +419,9 @@ test('synthetic and rollback validators are fail-closed and deterministic', asyn
   assert.match(runtime, /failing analytics upstream/);
   assert.match(runtime, /\/health and \/ remain healthy/);
   assert.match(runtime, /expected fixture 503/);
+  assert.match(runtime, /chmod 0644/);
+  assert.match(runtime, /fault-server did not answer its local health probe/);
+  assert.match(runtime, /site container exited before publishing its port/);
   assert.match(rollback, /git revert/);
   assert.match(rollback, /deploy\/kustomization\.yaml/);
   assert.match(rollback, /operator-run production drill/);

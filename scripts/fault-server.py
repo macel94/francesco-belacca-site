@@ -13,6 +13,9 @@ class Handler(BaseHTTPRequestHandler):
         if self.path.startswith("/count"):
             self.send_response(503)
             body = b"analytics dependency deliberately unavailable\n"
+        elif self.path == "/health":
+            self.send_response(200)
+            body = b"ok\n"
         else:
             self.send_response(200)
             body = b"upstream fixture\n"
