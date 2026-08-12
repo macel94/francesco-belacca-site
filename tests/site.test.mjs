@@ -358,7 +358,7 @@ test('animated layers stay visible, multi-character, and reduced-motion aware', 
   assert.match(canvasRule, /left:\s*0/);
   assert.match(canvasRule, /z-index:\s*0/);
   assert.match(canvasRule, /pointer-events:\s*none/);
-  assert.match(canvasRule, /opacity:\s*\.6/);
+  assert.match(canvasRule, /opacity:\s*\.31/);
   assert.match(noiseRule, /z-index:\s*1/);
   assert.match(noiseRule, /pointer-events:\s*none/);
   assert.match(shellRule, /z-index:\s*2/);
