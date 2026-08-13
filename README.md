@@ -19,7 +19,6 @@ native Flux, Traefik, cert-manager, Longhorn, Pong, portfolio, analytics, Dex,
 Headlamp, and Flux Web are operational. Pong, GoatCounter, and Dex state was
 quiesced, integrity-checked, and restored into native Longhorn-backed RWO PVCs.
 
-The former single-host `k3d-pong` runtime on `.73` was retired after cutover.
 Native production is not a development sandbox; use local mode or an explicitly
 disposable isolated environment for development. See
 [`belacca-infrastructure`](https://github.com/macel94/belacca-infrastructure),

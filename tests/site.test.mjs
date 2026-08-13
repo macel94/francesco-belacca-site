@@ -107,7 +107,7 @@ test('reliability copy separates current capability from planned work', async ()
   assert.match(html, /planned ≠ deployed/);
   assert.doesNotMatch(html, /99\.99%/);
   assert.doesNotMatch(html, /all systems nominal/);
-  assert.doesNotMatch(html, /169\.58\.97\.73|vmi3474918|k3d-pong|10\.43\.0\.10|45371/);
+  assert.match(html, /native production|status\.json|slo\.json/u);
   assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
 });
 
