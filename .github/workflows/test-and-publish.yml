@@ -15,6 +15,7 @@ on:
       - 'portfolio-slo.schema.json'
       - 'docs/**'
       - 'scripts/**'
+      - 'security/**'
       - 'status.js'
       - 'styles.css'
       - 'app.js'
@@ -118,7 +119,18 @@ jobs:
           output: francesco-belacca-site.trivy.json
           severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
           ignore-unfixed: false
+          scanners: vuln
           exit-code: '0'
+
+      - name: Upload scan evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: francesco-belacca-site-security-${{ github.sha }}
+          path: |
+            francesco-belacca-site.trivy.json
+            security/site.openvex.json
+          if-no-files-found: warn
 
       - name: Create vulnerability decision
         env:
@@ -134,7 +146,7 @@ jobs:
             import { readFile } from "node:fs/promises";
             const decision = JSON.parse(await readFile("francesco-belacca-site.vulnerability-decision.json", "utf8"));
             if (["HIGH", "CRITICAL"].includes(decision.maxSeverity) || decision.knownUnfixed) {
-              throw new Error(`native-production-v1 promotion blocked: maxSeverity=${decision.maxSeverity}, knownUnfixed=${decision.knownUnfixed}`);
+              throw new Error(`native-production-v1 promotion blocked: maxUnfixedSeverity=${decision.maxSeverity}, maxObservedSeverity=${decision.maxObservedSeverity}, knownUnfixed=${decision.knownUnfixed}`);
             }
           '
 

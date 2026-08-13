@@ -1,0 +1,20 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/macel94/francesco-belacca-site/blob/main/security/site.openvex.json",
+  "author": "Francesco Belacca",
+  "role": "Application security decision",
+  "timestamp": "2026-08-13T00:00:00Z",
+  "version": 1,
+  "tooling": "https://trivy.dev/latest/docs/supply-chain/vex/file/",
+  "statements": [
+    {
+      "vulnerability": { "name": "GO-2026-5932" },
+      "products": [
+        { "@id": "pkg:golang/golang.org/x/crypto@v0.52.0" }
+      ],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_present",
+      "impact_statement": "The Caddy v2.11.4 binary contains x/crypto SSH/TLS packages but no golang.org/x/crypto/openpgp symbols; the vulnerable OpenPGP code is not present in the executed binary."
+    }
+  ]
+}

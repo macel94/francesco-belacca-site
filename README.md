@@ -79,9 +79,11 @@ The external monitoring path is live. `belacca-status` publishes sanitized `stat
 The portfolio synthetic checks health, homepage HTML/canonical metadata, cache freshness, and (when configured out of band) aliases plus path/query preservation. GoatCounter is deliberately outside the primary portfolio availability SLI: `scripts/runtime-check.sh` runs a disposable site with a failing analytics upstream and proves that `/health` and `/` still work. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. No paging destination is provisioned; no off-cluster backup, health-aware failover, or real failure drills are claimed. A separate controlled-drill recovery P95 under six minutes remains unproven. `scripts/gitops-rollback-check.sh` proves reviewed Git revert recovery of the Kustomize desired image tag in an isolated repository; a production Flux reconciliation drill and external observation are operator follow-up, not claimed evidence. The reliability page describes these boundaries rather than implying that they exist.
 Image delivery now has registry SBOM, provenance, and signed
 `native-production-v1` vulnerability-decision attestations for the exact image
-digest. Verify an immutable GHCR image with `scripts/verify-attestation.sh`;
-Kyverno admission requires the digest plus all matching attestations before a
-new production Pod can start.
+digest. The committed OpenVEX assessment in `security/site.openvex.json` is
+narrowly scoped to the deprecated OpenPGP package code that is not linked into
+the Caddy binary; it does not waive other findings. Verify an immutable GHCR
+image with `scripts/verify-attestation.sh`; Kyverno admission requires the
+digest plus all matching attestations before a new production Pod can start.
 
 ### Supply chain and synthetic endpoint check
 

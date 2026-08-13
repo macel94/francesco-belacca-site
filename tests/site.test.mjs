@@ -162,6 +162,8 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/);
   assert.match(workflow, /subject-digest: \$\{\{ steps\.image\.outputs\.digest \}\}/);
   assert.match(workflow, /image-ref: \$\{\{ steps\.image\.outputs\.reference \}\}/);
+  assert.match(workflow, /scanners: vuln/);
+  assert.match(workflow, /Upload scan evidence/);
   assert.match(workflow, /predicate-type: https:\/\/belacca\.com\/attestations\/vulnerability\/v1/);
   assert.match(workflow, /predicate-path: francesco-belacca-site\.vulnerability-decision\.json/);
   assert.match(workflow, /native-production-v1 promotion blocked/);
@@ -435,11 +437,16 @@ test('portfolio SLO contract defines the durable user-journey measurement', asyn
 
 test('vulnerability decision generator is packaged and fail-closed', async () => {
   const script = await read('scripts/create-vulnerability-decision.mjs');
+  const reliability = await read('reliability.html');
   const decisionTests = await read('tests/vulnerability-decision.test.mjs');
   assert.match(script, /native-production-v1/);
+  const vex = await read('security/site.openvex.json');
   assert.match(script, /knownUnfixed/);
+  assert.match(vex, /GO-2026-5932/);
+  assert.match(vex, /vulnerable_code_not_present/);
+  assert.match(reliability, /vulnerability-decision|Measured/);
   assert.match(decisionTests, /fixed medium findings remain promotable/);
-  assert.match(decisionTests, /high, critical, and known-unfixed/);
+  assert.match(decisionTests, /high, critical, and any other known-unfixed/);
 });
 
 test('synthetic and rollback validators are fail-closed and deterministic', async () => {
