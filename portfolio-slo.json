@@ -10,10 +10,11 @@
     "sla": false
   },
   "measurement": {
-    "state": "not_reportable",
+    "state": "measured",
+    "measurement_window": "available_history",
     "source": "external_user_journey",
     "source_repository": "https://github.com/macel94/belacca-status",
-    "reason": "A complete valid rolling 30-day observation history is not available in this repository.",
+    "reason": "The current level is calculated from observed good and bad journeys; it becomes rolling_30d after the evidence spans 30 days.",
     "build_metadata_is_evidence": false
   },
   "sli": {

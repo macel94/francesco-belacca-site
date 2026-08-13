@@ -24,7 +24,7 @@ Francesco Belacca is a Senior Site Reliability Engineer based in Parma, Italy. H
 
 ## Reliability and systems note
 
-- [Reliability / Systems](https://francesco.belacca.com/reliability.html): A public, bounded description of the native-production architecture, external SLO evidence boundary, private diagnostics, incident practice, backup limitations, and unproven recovery/failover gaps. It is not a live status page and does not claim a reportable 30-day SLO yet.
+- [Reliability / Systems](https://francesco.belacca.com/reliability.html): A public, bounded description of the native-production architecture, external SLO evidence boundary, private diagnostics, incident practice, backup limitations, and unproven recovery/failover gaps. It is not a live status page; it publishes measured service levels from available observations and transitions to the latest rolling 30-day window after 30 days.
 - [Public Status](https://francesco.belacca.com/status.html): A sanitized status surface fed by hourly GitHub-hosted external observations from the separate [belacca-status repository](https://github.com/macel94/belacca-status). It expires stale data, preserves an unknown fallback, and documents the single-native-cluster limitation.
 
 ## Public profiles

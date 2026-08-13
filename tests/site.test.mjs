@@ -96,9 +96,10 @@ test('reliability page meets basic keyboard and landmark expectations', async ()
 test('reliability copy separates current capability from planned work', async () => {
   const html = await read('reliability.html');
   assert.match(html, /not a live status page/);
-  assert.match(html, /policy and evidence pipeline exists/);
-  assert.match(html, /complete valid rolling 30-day measured window/);
-  assert.match(html, /30-day SLO values remain [^<]*not reportable/);
+  assert.match(html, /external monitoring path is live/);
+  assert.match(html, /current service levels are calculated from the good and bad observations already available/i);
+  assert.match(html, /latest rolling 30-day window/);
+  assert.doesNotMatch(html, /30-day SLO values remain [^<]*not reportable/);
   assert.match(html, /external journeys \/ current/);
   assert.match(html, /no scheduled encrypted off-cluster backup/);
   assert.match(html, /registry SBOM and GitHub Artifact Attestation provenance/);
@@ -109,6 +110,8 @@ test('reliability copy separates current capability from planned work', async ()
   assert.doesNotMatch(html, /99\.99%/);
   assert.doesNotMatch(html, /all systems nominal/);
   assert.match(html, /native production|status\.json|slo\.json/u);
+  assert.match(html, /data-slo-services/);
+  assert.match(html, /reliability\.js/);
   assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
 });
 
@@ -118,8 +121,9 @@ test('public reliability claims identify evidence limits and unproven objectives
   const documents = [html, readme];
   const markers = [
     /policy and evidence pipeline exists/,
-    /complete valid rolling 30-day measured\s+(?:window|history)/,
-    /30-day SLO values remain\s+not\s+reportable/,
+    /external monitoring path is live/,
+    /current service levels are calculated from the good and bad observations already available/i,
+    /latest rolling 30-day window/i,
     /external user-journey checks now cover the portfolio, Pong, and analytics\s+collector/i,
     /authenticated dashboard checks remain unconfigured/i,
     /Native Prometheus is private diagnostic\s+telemetry/,
@@ -148,10 +152,11 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(dockerfile, /__BUILD_RUN_URL__/);
   assert.match(dockerfile, /actions\/runs/);
   assert.match(workflow, /BUILD_RUN_ID=\$\{\{ github\.run_id \}\}/);
-  assert.match(dockerfile, /COPY index\.html reliability\.html status\.html privacy\.html/);
+  assert.match(dockerfile, /COPY index\.html reliability\.html reliability\.js status\.html privacy\.html/);
   assert.match(dockerfile, /COPY Caddyfile \/etc\/caddy\/Caddyfile/);
   assert.match(dockerfile, /\/srv\/index\.html/);
   assert.match(workflow, /- 'reliability\.html'/);
+  assert.match(workflow, /- 'reliability\.js'/);
   assert.match(workflow, /- 'Caddyfile'/);
   assert.match(workflow, /docker\/setup-buildx-action@[0-9a-f]{40}/);
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/);
@@ -162,6 +167,19 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(workflow, /artifact-metadata: write/);
   assert.match(caddy, /X-Content-Type-Options/);
   assert.doesNotMatch(html, /BUILD_TOKEN|API_KEY|PASSWORD|BEGIN (?:RSA|OPENSSH) PRIVATE KEY/);
+});
+
+test('reliability SLO surface renders measured history without becoming current status', async () => {
+  const html = await read('reliability.html');
+  const script = await read('reliability.js');
+  assert.match(html, /id="measurements"/);
+  assert.match(html, /data-slo-services/);
+  assert.match(html, /good observations \/ \(good \+ bad observations\)/);
+  assert.match(script, /belacca-status\/main\/slo\.json/);
+  assert.match(script, /available_history/);
+  assert.match(script, /rolling_30d/);
+  assert.match(script, /observed_slots/);
+  assert.doesNotMatch(script, /innerHTML\s*=\s*service\.(?:name|id)/);
 });
 
 test('public status stays unknown until a fresh automated external observation supplies data', async () => {
@@ -238,7 +256,7 @@ test('site discovery assets are linked and shipped', async () => {
     assert.match(documentHtml, /rel="apple-touch-icon" href="\/apple-touch-icon\.png" sizes="180x180"/);
   }
   assert.match(html, /href="\/site\.webmanifest"/);
-  for (const asset of ['index.html', 'reliability.html', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
+  for (const asset of ['index.html', 'reliability.html', 'reliability.js', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
   assert.match(dockerfile, /ARG BUILD_SHA=dev/);
   assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
@@ -392,7 +410,8 @@ test('portfolio SLO contract defines the durable user-journey measurement', asyn
   assert.equal(slo.objective.window, '30d');
   assert.equal(slo.objective.classification, 'internal_objective');
   assert.equal(slo.objective.sla, false);
-  assert.equal(slo.measurement.state, 'not_reportable');
+  assert.equal(slo.measurement.state, 'measured');
+  assert.equal(slo.measurement.measurement_window, 'available_history');
   assert.equal(slo.measurement.build_metadata_is_evidence, false);
   assert.equal(slo.sli.id, 'portfolio_user_journey_availability');
   assert.equal(slo.sli.calculation, 'good_events / total_events');
@@ -403,7 +422,7 @@ test('portfolio SLO contract defines the durable user-journey measurement', asyn
   assert.equal(slo.rollback.validator, 'scripts/gitops-rollback-check.sh');
   assert.equal(schema.properties.objective.properties.target.const, 0.99);
   assert.match(readme, /durable portfolio SLO contract/);
-  assert.match(reliability, /portfolio SLI is defined as one external journey/);
+  assert.match(reliability, /portfolio SLI contract and external probe cover the health and homepage journey/);
   assert.match(reliability, /analytics failure is excluded from the primary event/);
   assert.doesNotMatch(JSON.stringify(slo), /__BUILD_SHA|BUILD_RUN_ID|uptime/i);
 });

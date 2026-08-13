@@ -27,16 +27,18 @@ harmless `/count` collector paths, and portfolio alias redirects. `/count.js` is
 a supporting diagnostic; redirects are not separate SLO services. Native
 WebTransport is an opt-in deployment path and is not treated as a public
 monitoring prerequisite until UDP ingress is enabled. The internal objective is
-99% per public service over 30 days with no SLA; `slo.json` remains non-reportable
-until a complete valid rolling window exists. It stores no response bodies, room
+99% per public service over 30 days with no SLA. `slo.json` reports the current
+measured level from observed good and bad journeys, then uses the latest rolling
+30-day window after the history spans 30 days. It stores no response bodies, room
 IDs, player names, addresses, cookies, tokens, internal hostnames, or raw
 exception messages. Authenticated dashboard checks remain unconfigured.
 
 The portfolio SLI is versioned locally in [`portfolio-slo.json`](portfolio-slo.json):
 one total event is the combined `/health` and homepage journey, and it is good
 only when both responses meet their status/body/cache contracts. The 99%/30d
-value is an internal objective and remains not reportable until this external
-publisher has a complete valid rolling window. Alias redirects and path/query
+value is an internal objective; the current measured value uses the observations
+already available, and the rolling-30-day value uses the latest complete horizon.
+Alias redirects and path/query
 preservation are journey assertions, not separate SLO services. GoatCounter's
 same-origin `/count` proxy is a diagnostic dependency and is excluded from the
 primary availability event when the portfolio page remains available.

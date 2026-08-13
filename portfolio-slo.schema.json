@@ -20,9 +20,10 @@
     },
     "measurement": {
       "type": "object", "additionalProperties": false,
-      "required": ["state", "source", "source_repository", "reason", "build_metadata_is_evidence"],
+      "required": ["state", "measurement_window", "source", "source_repository", "reason", "build_metadata_is_evidence"],
       "properties": {
-        "state": { "enum": ["not_reportable", "reported"] },
+        "state": { "enum": ["measured", "reported"] },
+        "measurement_window": { "enum": ["available_history", "rolling_30d"] },
         "source": { "const": "external_user_journey" },
         "source_repository": { "type": "string", "format": "uri" },
         "reason": { "type": "string", "minLength": 1 },

@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="/styles.css" />
     <script data-goatcounter="/count" async src="/count.js"></script>
     <script src="/app.js" defer></script>
+    <script src="/reliability.js" defer></script>
     <title>Reliability / Systems — Francesco Belacca</title>
   </head>
   <body>
@@ -62,7 +63,7 @@
             <p class="eyebrow"><span class="prompt">&gt;_</span> reliability / systems notes <span class="cursor" aria-hidden="true"></span></p>
             <h1 id="systems-title">Reliability,<br /><em>with receipts.</em></h1>
             <p class="hero-lede">A public, deliberately bounded view of how the Belacca platform is built, delivered, protected, and improved.</p>
-            <p class="reliability-disclaimer"><strong>Current state:</strong> this is an architecture note, not a live status page. The policy and evidence pipeline exists and the external monitoring path is live: the portfolio SLI is defined as one external journey where both <code>/health</code> and <code>/</code> pass, while the separate status publisher checks portfolio, Pong, analytics <code>/status</code> plus same-origin <code>/count</code>, and representative portfolio aliases. It publishes sanitized <code>status.json</code> and durable <code>slo.json</code> artifacts from outside the native cluster. External user-journey checks now cover the portfolio, Pong, and analytics collector. The history is not yet a complete valid rolling 30-day measured window, so 30-day SLO values remain <mark>not reportable</mark> and no numeric error-budget claim is made. Native Prometheus is private diagnostic telemetry, not external availability proof. The 99% availability target per public service is an internal objective, not an SLA; optional authenticated dashboard and Flux checks remain configuration-unknown; no paging destination, off-cluster backup, health-aware failover, or real failure drills are claimed.</p>
+            <p class="reliability-disclaimer"><strong>Current state:</strong> this is an architecture note, not a live status page. The policy and evidence pipeline exists and the external monitoring path is live; it publishes sanitized <code>status.json</code> and durable <code>slo.json</code> artifacts from outside the native cluster. Current service levels are calculated from the good and bad observations already available; the page shows the observed count and coverage beside each number. Once the history spans 30 days, the calculation automatically becomes the latest rolling 30-day window. Native Prometheus is private diagnostic telemetry, not external availability proof. The 99% availability target per public service is an internal objective, not an SLA; optional authenticated dashboard and Flux checks remain configuration-unknown; no paging destination, off-cluster backup, health-aware failover, or real failure drills are claimed.</p>
           </div>
           <aside class="metadata-card reveal reveal-delay-1" aria-labelledby="metadata-title">
             <div class="console-top"><span id="metadata-title">release://evidence</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
@@ -135,7 +136,7 @@
               <ol class="method-list">
                 <li><strong>Journey</strong><span>Define the user action that matters.</span></li>
                 <li><strong>SLI</strong><span>Count good and total events at the boundary.</span></li>
-                <li><strong>Policy</strong><span>Set an internal objective and require a complete valid rolling window before reporting it.</span></li>
+                <li><strong>Policy</strong><span>Set an internal objective and report the measured level from available observations, then use the latest complete rolling window once it exists.</span></li>
                 <li><strong>Budget</strong><span>Use missed reliability as a delivery trade-off.</span></li>
                 <li><strong>Evidence</strong><span>Connect alerts, deployments, and incident notes.</span></li>
               </ol>
@@ -150,13 +151,22 @@
                 <div><dt>analytics collector</dt><dd>External user-journey checks cover the public analytics collector.</dd></div>
                 <div><dt>authenticated dashboard</dt><dd>Authenticated dashboard checks remain unconfigured.</dd></div>
               </dl>
-              <p class="planned-note"><strong>Evidence boundary:</strong> <code>portfolio-slo.json</code> defines the portfolio journey, while belacca-status publishes sanitized <code>status.json</code> current-state evidence and <code>slo.json</code> rolling-window evidence. The history is not yet a complete valid rolling 30-day measured history, so 30-day SLO values remain not reportable and numeric error-budget values are withheld; missing or malformed slots never count as success. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. The 99% availability objective per public service is internal, not an SLA, and budget exhaustion does not by itself change public status or page users. No paging destination is provisioned.</p>
+              <p class="planned-note"><strong>Evidence boundary:</strong> <code>portfolio-slo.json</code> defines the portfolio journey, while belacca-status publishes sanitized <code>status.json</code> current-state evidence and <code>slo.json</code> measured service levels. Each current level is <code>good observations / (good + bad observations)</code>; unknown or missing slots are displayed as coverage context and never count as success. Before 30 days of history, the denominator is the observations already available. Once the history spans 30 days, it is the latest rolling 30-day window. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. The 99% availability objective per public service is internal, not an SLA, and budget exhaustion does not by itself change public status or page users. No paging destination is provisioned.</p>
             </article>
           </div>
         </section>
 
+        <section class="content-section reliability-section" id="measurements" aria-labelledby="measurements-title">
+          <div class="section-heading reveal"><span class="section-index">05</span><h2 id="measurements-title">Measured<br /><em>service levels.</em></h2><p class="heading-note" data-slo-summary>Loading the latest sanitized SLO evidence.</p></div>
+          <div class="status-list-card slo-list-card reveal">
+            <ul class="status-list slo-list" data-slo-services>
+              <li>No measured service-level observations are available.</li>
+            </ul>
+          </div>
+        </section>
+
         <section class="content-section reliability-section limitations" id="resilience" aria-labelledby="resilience-title">
-          <div class="section-heading reveal"><span class="section-index">05</span><h2 id="resilience-title">Recovery has<br /><em>limits.</em></h2><p class="heading-note">Naming the failure domain is more useful than displaying an unearned uptime number.</p></div>
+          <div class="section-heading reveal"><span class="section-index">06</span><h2 id="resilience-title">Recovery has<br /><em>limits.</em></h2><p class="heading-note">Naming the failure domain is more useful than displaying an unearned uptime number.</p></div>
           <div class="resilience-grid">
             <article class="limitation-card reveal"><span class="flow-index">backup boundary / current</span><h3>Replicated, not backed up</h3><p>Pong, GoatCounter, and Dex retain SQLite data on single-writer Longhorn-backed RWO volumes with three replicas. Replication improves node recovery, but there is still no scheduled encrypted off-cluster backup, retention policy, or verified restore job.</p><p class="warning-line">Therefore: no public RPO or RTO promise.</p></article>
             <article class="limitation-card reveal reveal-delay-1"><span class="flow-index">recovery practice / current</span><h3>Safe first response</h3><p>Runbooks start with non-destructive inspection, preserve protected state, check user-facing routes and Flux health, and use a reviewed Git revert for application rollback. Native services support host restart recovery; no paging destination is provisioned and no real failure drills are claimed.</p><p class="warning-line">A separate controlled-drill recovery P95 under six minutes remains unproven.</p></article>
@@ -165,7 +175,7 @@
         </section>
 
         <section class="content-section reliability-section reliability-contact" aria-labelledby="reliability-contact-title">
-          <div class="contact-card reveal"><div><span class="section-index">06 / QUESTIONS</span><h2 id="reliability-contact-title">Prefer a system<br /><em>you can inspect?</em></h2></div><div class="contact-action"><p>Source, manifests, and the limits behind this page are public.</p><a class="button button-primary" href="https://github.com/macel94/belacca-platform" target="_blank" rel="noreferrer">Inspect the platform <span aria-hidden="true">↗</span></a></div></div>
+          <div class="contact-card reveal"><div><span class="section-index">07 / QUESTIONS</span><h2 id="reliability-contact-title">Prefer a system<br /><em>you can inspect?</em></h2></div><div class="contact-action"><p>Source, manifests, and the limits behind this page are public.</p><a class="button button-primary" href="https://github.com/macel94/belacca-platform" target="_blank" rel="noreferrer">Inspect the platform <span aria-hidden="true">↗</span></a></div></div>
         </section>
       </main>
 

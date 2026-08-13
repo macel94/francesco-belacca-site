@@ -25,7 +25,8 @@ equal(slo.objective.target, 0.99, 'objective.target');
 equal(slo.objective.window, '30d', 'objective.window');
 equal(slo.objective.classification, 'internal_objective', 'objective.classification');
 equal(slo.objective.sla, false, 'objective.sla');
-equal(slo.measurement.state, 'not_reportable', 'measurement.state');
+equal(slo.measurement.state, 'measured', 'measurement.state');
+equal(slo.measurement.measurement_window, 'available_history', 'measurement.measurement_window');
 equal(slo.measurement.source, 'external_user_journey', 'measurement.source');
 equal(slo.measurement.build_metadata_is_evidence, false, 'measurement.build_metadata_is_evidence');
 equal(slo.sli.id, 'portfolio_user_journey_availability', 'sli.id');
@@ -46,4 +47,4 @@ if (!slo.sli.checks.some((check) => check.id === 'homepage' && check.path === '/
 if (schema.properties?.objective?.properties?.target?.const !== 0.99) fail('schema does not pin the 99% objective');
 if (JSON.stringify(slo).match(/BUILD_SHA|BUILD_RUN_ID|build identifier.*availability/i)) fail('build metadata must not be availability evidence');
 
-console.log('portfolio SLO contract valid: belacca.portfolio-slo.v1 (99%/30d internal objective; not reportable)');
+console.log('portfolio SLO contract valid: belacca.portfolio-slo.v1 (current measured level; 99%/30d internal objective)');

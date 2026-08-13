@@ -17,8 +17,9 @@ an external endpoint, GitHub Actions variables, cluster access, and human review
 - **Analytics boundary:** `/count` is a same-origin diagnostic dependency. Its
   failure is not a primary SLI failure when the health and homepage journey remains
   available.
-- **Evidence state in this repository:** `not_reportable` until the separate
-  external status publisher has a complete valid rolling 30-day history.
+- **Evidence state in this repository:** `measured` over `available_history` now;
+  the separate publisher switches the measurement window to `rolling_30d` after
+  the evidence spans 30 days.
 
 A build SHA, build link, image digest, Kubernetes readiness result, or Flux health
 result identifies delivery state but is never availability evidence.
