@@ -70,27 +70,11 @@ source commit and its short form into the site as build metadata; this identifie
 the artifact but is not an availability measurement. Flux in the hosting cluster
 watches this repository and reconciles that deployment manifest.
 
-The policy and evidence pipeline exists. The durable portfolio SLO contract is [`portfolio-slo.json`](portfolio-slo.json), with the operator procedure in [`docs/portfolio-reliability-checks.md`](docs/portfolio-reliability-checks.md):
-one external probe is one total event, and it is good only when both `/health`
-and `/` return their expected successful responses. The 99% target is an internal objective, not an SLA. The probe also supports
-out-of-band alias and path-preserving redirect assertions. 30-day SLO values remain not reportable until `belacca-status` has a complete valid rolling 30-day measured history. `belacca-status` publishes sanitized status observations and `slo.json`;
-the public status page still consumes its fresh `status.json` contract and keeps
-an `unknown` / `not_configured` fallback. Native Prometheus is private diagnostic
-telemetry, not external availability proof or a public SLO calculation.
+The policy and evidence pipeline exists and is live. The durable portfolio SLO contract is [`portfolio-slo.json`](portfolio-slo.json), with the operator procedure in [`docs/portfolio-reliability-checks.md`](docs/portfolio-reliability-checks.md): one external probe is one total event, and it is good only when both `/health` and `/` return their expected successful responses. The 99% target is an internal objective, not an SLA. The probe also supports out-of-band alias and path-preserving redirect assertions.
 
-The portfolio synthetic checks health, homepage HTML/canonical metadata,
-cache freshness, and (when configured out of band) aliases plus path/query
-preservation. GoatCounter is deliberately outside the primary availability
-SLI: `scripts/runtime-check.sh` runs a disposable site with a failing analytics
-upstream and proves that `/health` and `/` still work. Authenticated dashboard
-checks remain unconfigured. No paging destination is provisioned; no
-off-cluster backup, health-aware failover, or real failure drills are claimed. A
-separate controlled-drill recovery P95 under six minutes remains unproven.
-`scripts/gitops-rollback-check.sh` proves reviewed Git revert recovery of the
-Kustomize desired image tag in an isolated repository; a production Flux
-reconciliation drill and external observation are operator follow-up, not
-claimed evidence. The reliability page describes these boundaries rather than
-implying that they exist.
+`belacca-status` now publishes both sanitized `status.json` observations and durable `slo.json` evidence from its external failure domain. External user-journey checks now cover the portfolio, Pong, and analytics collector; analytics uses `/status` plus same-origin `/count`, and representative portfolio aliases are also checked. The hourly checks cover the portfolio, Pong, analytics `/status` plus same-origin `/count`, and representative portfolio aliases; optional authenticated dashboard and Flux checks remain unconfigured and fail closed as configuration-unknown until an operator-managed identity is provisioned. The public status page consumes only fresh `status.json` for current component state, while SLO evidence remains a separate reliability artifact. The current history is not yet a complete valid rolling 30-day measured history, so 30-day SLO values remain not reportable and numeric error-budget values are withheld. Missing or malformed slots never count as success.
+
+The portfolio synthetic checks health, homepage HTML/canonical metadata, cache freshness, and (when configured out of band) aliases plus path/query preservation. GoatCounter is deliberately outside the primary portfolio availability SLI: `scripts/runtime-check.sh` runs a disposable site with a failing analytics upstream and proves that `/health` and `/` still work. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. No paging destination is provisioned; no off-cluster backup, health-aware failover, or real failure drills are claimed. A separate controlled-drill recovery P95 under six minutes remains unproven. `scripts/gitops-rollback-check.sh` proves reviewed Git revert recovery of the Kustomize desired image tag in an isolated repository; a production Flux reconciliation drill and external observation are operator follow-up, not claimed evidence. The reliability page describes these boundaries rather than implying that they exist.
 Image delivery now has a registry SBOM and GitHub Artifact Attestation
 provenance. Verify an immutable GHCR image with
 `scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
@@ -125,7 +109,11 @@ The scheduled `.github/workflows/synthetic-check.yml` runs the portfolio SLI
 probe for `/health` and `/`, and can assert aliases/path-preserving redirects
 when `SYNTHETIC_ALIAS_URLS` is configured as an out-of-band variable. The
 workflow safely skips when no canonical URL is configured. The separate [`macel94/belacca-status`](https://github.com/macel94/belacca-status)
-workflow is the hourly public status publisher. It runs outside the VM; external user-journey checks now cover the portfolio, Pong, and analytics collector, commit sanitized observations, and expire them after two hours. Authenticated dashboard checks remain unconfigured.
+workflow is the hourly external publisher. It runs outside the VM, checks the
+portfolio, Pong, analytics `/status` and `/count`, and representative portfolio
+aliases, then commits sanitized observations and regenerates both `status.json`
+and `slo.json`. Artifacts expire or become non-reportable when freshness,
+coverage, or schema requirements fail. Authenticated dashboard checks remain unconfigured, and Flux checks remain configuration-unknown until their dedicated least-privilege identity is managed out of band.
 
 Local dry runs require no credentials or external endpoint:
 
@@ -140,10 +128,13 @@ Local dry runs require no credentials or external endpoint:
 
 ### Evidence and AI-assistance boundary
 
-The public status page consumes the sanitized v2 artifact from the separate
+The public status page consumes the sanitized v2 `status.json` artifact from the separate
 status repository and falls back to checked-in `unknown` / `not_configured` when
-that artifact is missing, malformed, or stale. The GitHub-hosted runner is an
-external observation source, not multi-region monitoring. Human approval applies
+that artifact is missing, malformed, or stale. The separate `slo.json` artifact
+is durable reliability evidence for the 99%/30d internal objective; it is not
+rendered as public current status and does not turn an incomplete window into an
+uptime claim. The GitHub-hosted runner is an external observation source, not
+multi-region monitoring. Human approval applies
 to the monitoring policy, not to each automated observation. The page cannot be
 served during a complete outage of the native cluster; the remote repository retains
 the observation for display after recovery. Any AI-assisted summary of
