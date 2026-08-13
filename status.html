@@ -25,7 +25,7 @@
     <canvas class="matrix-canvas" id="matrix-canvas" aria-hidden="true"></canvas>
     <div class="noise" aria-hidden="true"></div>
     <div class="shell reliability-shell status-shell">
-      <header class="site-header">
+      <header class="site-header mobile-header">
         <a class="brand" href="/" aria-label="Francesco Belacca home">
           <span class="brand-mark" aria-hidden="true">FB</span>
           <span class="brand-copy"><strong>francesco</strong><small>.belacca</small></span>
@@ -54,7 +54,7 @@
           <div class="reliability-hero-copy reveal">
             <p class="eyebrow"><span class="prompt">&gt;_</span> public status / sanitized evidence <span class="cursor" aria-hidden="true"></span></p>
             <h1 id="status-title">Status,<br /><em>with receipts.</em></h1>
-            <p class="hero-lede">A deliberately bounded public surface. It consumes hourly, sanitized observations from a GitHub-hosted runner outside this native cluster.</p>
+            <p class="hero-lede">A deliberately bounded public surface. It consumes fresh, sanitized current-status observations from a GitHub-hosted runner outside this native cluster; separate rolling-window SLO evidence is published for reliability review.</p>
             <p class="reliability-disclaimer"><strong>Current state:</strong> <span data-status-note>No fresh external status observation is available.</span> Until a fresh artifact is validated, the answer is <mark>unknown</mark>. This page never infers health from its own response.</p>
           </div>
           <aside class="metadata-card status-panel reveal reveal-delay-1" data-status-panel data-state="unknown" aria-labelledby="status-panel-title">
@@ -70,12 +70,12 @@
               <div><dt>valid until</dt><dd data-status-valid-until>not configured</dd></div>
               <div><dt>observation</dt><dd data-status-observation>not configured</dd></div>
             </dl>
-            <p class="metadata-note">A build timestamp or page response is not an availability measurement. This panel accepts only fresh, sanitized evidence generated under the published monitoring policy.</p>
+            <p class="metadata-note">A build timestamp or page response is not an availability measurement. This panel accepts only fresh, sanitized <code>status.json</code> evidence generated under the published monitoring policy; the separate <code>slo.json</code> artifact is reliability evidence and does not override current status.</p>
           </aside>
         </section>
 
         <section class="content-section reliability-section" id="components" aria-labelledby="components-title">
-          <div class="section-heading reveal"><span class="section-index">01</span><h2 id="components-title">Component<br /><em>signals.</em></h2><p class="heading-note">These are the user-facing services covered by the hourly external observation.</p></div>
+          <div class="section-heading reveal"><span class="section-index">01</span><h2 id="components-title">Component<br /><em>signals.</em></h2><p class="heading-note">These are the user-facing services covered by the hourly external observation: portfolio, Pong, and analytics.</p></div>
           <div class="status-list-card reveal">
             <ul class="status-list" data-status-components>
               <li>No component-level status has been configured.</li>
@@ -84,7 +84,7 @@
         </section>
 
         <section class="content-section reliability-section" id="sources" aria-labelledby="sources-title">
-          <div class="section-heading reveal"><span class="section-index">02</span><h2 id="sources-title">Evidence<br /><em>links.</em></h2><p class="heading-note">Every published observation carries bounded links to its workflow and history.</p></div>
+          <div class="section-heading reveal"><span class="section-index">02</span><h2 id="sources-title">Evidence<br /><em>links.</em></h2><p class="heading-note">Every published <code>status.json</code> observation carries bounded links to its workflow and history; rolling SLO evidence remains a separate artifact.</p></div>
           <div class="status-list-card reveal">
             <ul class="status-list" data-status-sources>
               <li>No source references have been configured.</li>
@@ -105,7 +105,7 @@
           <div class="section-heading reveal"><span class="section-index">04</span><h2 id="contract-title">A small<br /><em>contract.</em></h2><p class="heading-note">The checked-in fallback is safe by default; live claims require fresh, policy-bound evidence.</p></div>
           <div class="security-grid">
             <article class="security-card reveal"><span class="flow-index">freshness / current</span><h3>Unknown is valid</h3><p>The browser rejects missing, malformed, stale, or expired artifacts. A successful old observation never remains operational forever.</p></article>
-            <article class="security-card reveal reveal-delay-1"><span class="flow-index">policy / external</span><h3>Evidence travels with claims</h3><p>GitHub Actions runs the checks outside this native cluster and commits sanitized history. The monitoring policy is human-approved; individual observations are automated.</p></article>
+            <article class="security-card reveal reveal-delay-1"><span class="flow-index">policy / external</span><h3>Evidence travels with claims</h3><p>GitHub Actions runs the checks outside this native cluster and commits sanitized history. The monitoring policy is human-approved; individual observations are automated. The publisher also generates <code>slo.json</code> for the internal 99%/30d objective, but incomplete coverage remains non-reportable and never becomes a public uptime claim.</p></article>
           </div>
         </section>
 

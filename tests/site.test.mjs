@@ -44,6 +44,7 @@ test('analytics stays first-party and cookie-free', async () => {
   assert.match(tracker, /GoatCounter/);
   assert.doesNotMatch(tracker, /gc\.zgo\.at|zgo\.at\/count/);
   assert.match(caddy, /@count path \/count/);
+  assert.match(caddy, /handle @count\s+\{\s+reverse_proxy goatcounter\.analytics\.svc\.cluster\.local/s);
   assert.match(caddy, /goatcounter\.analytics\.svc\.cluster\.local/);
   assert.match(caddy, /header_up Host stats\.belacca\.com/);
   assert.match(caddy, /preserves and appends X-Forwarded-For by default/);
@@ -107,7 +108,7 @@ test('reliability copy separates current capability from planned work', async ()
   assert.match(html, /planned ≠ deployed/);
   assert.doesNotMatch(html, /99\.99%/);
   assert.doesNotMatch(html, /all systems nominal/);
-  assert.doesNotMatch(html, /169\.58\.97\.73|vmi3474918|k3d-pong|10\.43\.0\.10|45371/);
+  assert.match(html, /native production|status\.json|slo\.json/u);
   assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
 });
 
@@ -299,6 +300,21 @@ test('navigation remains usable on keyboard and compact screens', async () => {
   assert.match(js, /removeAttribute\('open'\)/);
 });
 
+test('hamburger headers use a non-overlapping mobile-only arrangement', async () => {
+  const css = await read('styles.css');
+  assert.match(css, /\.site-header \{ display: flex;/);
+  assert.match(css, /@media \(max-width: 650px\) \{ \.mobile-header \{ display: grid; grid-template-columns: minmax\(0, 1fr\) auto; grid-template-areas: "brand status" "build menu";/);
+  assert.match(css, /\.mobile-header \.header-right \{ display: contents; \}/);
+  assert.match(css, /\.mobile-header \.build-version \{ grid-area: build;/);
+  assert.match(css, /\.mobile-header \.status-pill \{ grid-area: status;/);
+  assert.match(css, /\.mobile-header \.mobile-menu \{ grid-area: menu;/);
+
+  for (const file of ['index.html', 'reliability.html', 'status.html']) {
+    const html = await read(file);
+    assert.match(html, /<header class="site-header mobile-header">/);
+  }
+});
+
 test('animation layer includes a reduced-motion path', async () => {
   const css = await read('styles.css');
   const js = await read('app.js');
@@ -358,7 +374,7 @@ test('animated layers stay visible, multi-character, and reduced-motion aware', 
   assert.match(canvasRule, /left:\s*0/);
   assert.match(canvasRule, /z-index:\s*0/);
   assert.match(canvasRule, /pointer-events:\s*none/);
-  assert.match(canvasRule, /opacity:\s*\.6/);
+  assert.match(canvasRule, /opacity:\s*\.31/);
   assert.match(noiseRule, /z-index:\s*1/);
   assert.match(noiseRule, /pointer-events:\s*none/);
   assert.match(shellRule, /z-index:\s*2/);
@@ -366,11 +382,58 @@ test('animated layers stay visible, multi-character, and reduced-motion aware', 
   assert.match(js, /!prefersReducedMotion/);
 });
 
+test('portfolio SLO contract defines the durable user-journey measurement', async () => {
+  const slo = JSON.parse(await read('portfolio-slo.json'));
+  const schema = JSON.parse(await read('portfolio-slo.schema.json'));
+  const readme = await read('README.md');
+  const reliability = await read('reliability.html');
+  assert.equal(slo.schema_version, 'belacca.portfolio-slo.v1');
+  assert.equal(slo.objective.target, 0.99);
+  assert.equal(slo.objective.window, '30d');
+  assert.equal(slo.objective.classification, 'internal_objective');
+  assert.equal(slo.objective.sla, false);
+  assert.equal(slo.measurement.state, 'not_reportable');
+  assert.equal(slo.measurement.build_metadata_is_evidence, false);
+  assert.equal(slo.sli.id, 'portfolio_user_journey_availability');
+  assert.equal(slo.sli.calculation, 'good_events / total_events');
+  assert.deepEqual(slo.sli.checks.map(({ id, path }) => ({ id, path })), [{ id: 'health', path: '/health' }, { id: 'homepage', path: '/' }]);
+  assert.equal(slo.journey_assertions.path_and_query_preserved, true);
+  assert.equal(slo.dependency_policy.primary_availability_impact, 'excluded');
+  assert.equal(slo.freshness_policy.build_identifier_role.includes('never availability evidence'), true);
+  assert.equal(slo.rollback.validator, 'scripts/gitops-rollback-check.sh');
+  assert.equal(schema.properties.objective.properties.target.const, 0.99);
+  assert.match(readme, /durable portfolio SLO contract/);
+  assert.match(reliability, /portfolio SLI is defined as one external journey/);
+  assert.match(reliability, /analytics failure is excluded from the primary event/);
+  assert.doesNotMatch(JSON.stringify(slo), /__BUILD_SHA|BUILD_RUN_ID|uptime/i);
+});
+
+test('synthetic and rollback validators are fail-closed and deterministic', async () => {
+  const synthetic = await read('scripts/synthetic-check.sh');
+  const runtime = await read('scripts/runtime-check.sh');
+  const rollback = await read('scripts/gitops-rollback-check.sh');
+  assert.match(synthetic, /REQUIRE_SYNTHETIC/);
+  assert.match(synthetic, /Cache-Control/);
+  assert.match(synthetic, /SYNTHETIC_ALIAS_URLS/);
+  assert.match(synthetic, /path\/query/);
+  assert.match(runtime, /failing analytics upstream/);
+  assert.match(runtime, /\/health and \/ remain healthy/);
+  assert.match(runtime, /expected fixture 503/);
+  assert.match(runtime, /chmod 0644/);
+  assert.match(runtime, /fault-server did not answer its local health probe/);
+  assert.match(runtime, /site container exited before publishing its port/);
+  assert.match(rollback, /git revert/);
+  assert.match(rollback, /deploy\/kustomization\.yaml/);
+  assert.match(rollback, /operator-run production drill/);
+  for (const script of [synthetic, runtime, rollback]) assert.doesNotMatch(script, /kubectl apply|flux reconcile|gh auth login/);
+});
+
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {
   const dockerfile = await read('Dockerfile');
   const caddy = await read('Caddyfile');
   assert.match(dockerfile, /docker\.io\/library\/caddy:2\.10\.2-alpine/);
   assert.match(caddy, /@health path \/health/);
+  assert.match(caddy, /@homepage path \/\s+header @homepage Cache-Control "no-cache, must-revalidate"/);
   assert.match(caddy, /@reliability path \/reliability\.html/);
   assert.match(caddy, /header @statushtml Cache-Control "no-store"/);
   assert.match(caddy, /header @styles Cache-Control "public, max-age=3600, must-revalidate"/);
@@ -380,6 +443,7 @@ test('container serves a health endpoint with hardened headers and cache behavio
   assert.match(caddy, /Referrer-Policy/);
   assert.match(caddy, /Permissions-Policy/);
   assert.match(caddy, /connect-src 'self' https:\/\/raw\.githubusercontent\.com/);
+  assert.match(dockerfile, /COPY [^\n]*portfolio-slo\.json portfolio-slo\.schema\.json/);
 });
 
 test('AI assistance and status boundaries are documented', async () => {

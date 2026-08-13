@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://francesco.belacca.com/portfolio-slo.schema.json",
+  "title": "Belacca portfolio SLO contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "service", "owner", "objective", "measurement", "sli", "journey_assertions", "dependency_policy", "freshness_policy", "rollback"],
+  "properties": {
+    "$schema": { "type": "string", "format": "uri-reference" },
+    "schema_version": { "const": "belacca.portfolio-slo.v1" },
+    "service": { "const": "portfolio" },
+    "owner": { "const": "francesco-belacca-site" },
+    "objective": {
+      "type": "object", "additionalProperties": false,
+      "required": ["target", "window", "classification", "sla"],
+      "properties": {
+        "target": { "const": 0.99 }, "window": { "const": "30d" },
+        "classification": { "const": "internal_objective" }, "sla": { "const": false }
+      }
+    },
+    "measurement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["state", "source", "source_repository", "reason", "build_metadata_is_evidence"],
+      "properties": {
+        "state": { "enum": ["not_reportable", "reported"] },
+        "source": { "const": "external_user_journey" },
+        "source_repository": { "type": "string", "format": "uri" },
+        "reason": { "type": "string", "minLength": 1 },
+        "build_metadata_is_evidence": { "const": false }
+      }
+    },
+    "sli": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "unit", "good_event", "total_event", "calculation", "availability_boundary", "checks"],
+      "properties": {
+        "id": { "const": "portfolio_user_journey_availability" }, "unit": { "const": "ratio" },
+        "good_event": { "type": "string", "minLength": 1 }, "total_event": { "type": "string", "minLength": 1 },
+        "calculation": { "const": "good_events / total_events" },
+        "availability_boundary": { "type": "string", "minLength": 1 },
+        "checks": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/check" } }
+      }
+    },
+    "journey_assertions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["canonical_host", "aliases", "redirect_status", "path_and_query_preserved", "configured_in", "not_reported_as_separate_services"],
+      "properties": {
+        "canonical_host": { "type": "string", "format": "uri" },
+        "aliases": { "type": "array", "minItems": 1, "items": { "type": "string", "format": "uri" } },
+        "redirect_status": { "type": "array", "minItems": 1, "items": { "enum": [301, 308] } },
+        "path_and_query_preserved": { "const": true },
+        "configured_in": { "type": "string", "minLength": 1 },
+        "not_reported_as_separate_services": { "const": true }
+      }
+    },
+    "dependency_policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "failure_behavior", "primary_availability_impact", "diagnostic_check", "browser_behavior"],
+      "properties": {
+        "id": { "const": "goatcounter_same_origin_proxy" }, "path": { "const": "/count" },
+        "failure_behavior": { "type": "string", "minLength": 1 }, "primary_availability_impact": { "const": "excluded" },
+        "diagnostic_check": { "type": "string", "minLength": 1 }, "browser_behavior": { "type": "string", "minLength": 1 }
+      }
+    },
+    "freshness_policy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["homepage_cache_control", "health_cache_control", "build_identifier_role", "synthetic_assertion"],
+      "properties": {
+        "homepage_cache_control": { "type": "string", "minLength": 1 }, "health_cache_control": { "const": "no-store" },
+        "build_identifier_role": { "type": "string", "minLength": 1 }, "synthetic_assertion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "rollback": {
+      "type": "object", "additionalProperties": false,
+      "required": ["method", "desired_state", "validator", "runtime_boundary"],
+      "properties": {
+        "method": { "const": "reviewed_git_revert" }, "desired_state": { "const": "deploy/kustomization.yaml image tag" },
+        "validator": { "const": "scripts/gitops-rollback-check.sh" }, "runtime_boundary": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "method", "expected_status", "cache_expectation"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }, "path": { "type": "string", "minLength": 1 },
+        "method": { "const": "GET" }, "expected_status": { "const": 200 },
+        "expected_body": { "type": "string" }, "expected_body_markers": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "cache_expectation": { "type": "string", "minLength": 1 }
+      },
+      "anyOf": [{ "required": ["expected_body"] }, { "required": ["expected_body_markers"] }]
+    }
+  }
+}

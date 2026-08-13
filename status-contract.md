@@ -32,6 +32,15 @@ until a complete valid rolling window exists. It stores no response bodies, room
 IDs, player names, addresses, cookies, tokens, internal hostnames, or raw
 exception messages. Authenticated dashboard checks remain unconfigured.
 
+The portfolio SLI is versioned locally in [`portfolio-slo.json`](portfolio-slo.json):
+one total event is the combined `/health` and homepage journey, and it is good
+only when both responses meet their status/body/cache contracts. The 99%/30d
+value is an internal objective and remains not reportable until this external
+publisher has a complete valid rolling window. Alias redirects and path/query
+preservation are journey assertions, not separate SLO services. GoatCounter's
+same-origin `/count` proxy is a diagnostic dependency and is excluded from the
+primary availability event when the portfolio page remains available.
+
 The policy approval applies to the monitored services, the internal 99%/30d
 objective, thresholds, freshness TTL, redaction rules, and publication behavior.
 Individual observations are automated; the page does not claim a person
@@ -42,7 +51,11 @@ and does not turn error-budget state into an incident or paging signal.
 
 The external GitHub runner can record an outage while the cluster is down, but
 this page is itself hosted in that cluster. During a complete native-cluster
-outage the page cannot display the new incident until the site recovers. A
-second public hosting failure domain would be required for an outage banner
+outage the page cannot display the new incident until the site recovers. The
+local `runtime-check.sh` degradation harness proves the analytics dependency
+boundary without making a production claim. A reviewed Git revert restores the
+desired immutable image tag in an isolated repository; a production Flux
+rollback drill still requires operator execution and evidence. A second public
+hosting failure domain would be required for an outage banner
 during total cluster failure. This is intentionally documented rather than
 presented as multi-region monitoring.
