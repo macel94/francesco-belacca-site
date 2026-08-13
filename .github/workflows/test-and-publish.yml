@@ -10,6 +10,10 @@ on:
       - 'status.json'
       - 'status.schema.json'
       - 'status-contract.md'
+      - 'portfolio-slo.json'
+      - 'portfolio-slo.schema.json'
+      - 'docs/**'
+      - 'scripts/**'
       - 'status.js'
       - 'styles.css'
       - 'app.js'
@@ -51,6 +55,12 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+      - name: Validate deterministic reliability checks
+        run: |
+          node scripts/validate-slo.mjs
+          ./scripts/synthetic-check.sh --dry-run
+          ./scripts/runtime-check.sh
+          ./scripts/gitops-rollback-check.sh
       - name: Build container
         run: docker build --build-arg BUILD_SHA="${GITHUB_SHA}" --build-arg BUILD_RUN_ID="${GITHUB_RUN_ID}" --tag francesco-belacca-site:test .
 

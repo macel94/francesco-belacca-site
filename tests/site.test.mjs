@@ -44,6 +44,7 @@ test('analytics stays first-party and cookie-free', async () => {
   assert.match(tracker, /GoatCounter/);
   assert.doesNotMatch(tracker, /gc\.zgo\.at|zgo\.at\/count/);
   assert.match(caddy, /@count path \/count/);
+  assert.match(caddy, /handle @count\s+\{\s+reverse_proxy goatcounter\.analytics\.svc\.cluster\.local/s);
   assert.match(caddy, /goatcounter\.analytics\.svc\.cluster\.local/);
   assert.match(caddy, /header_up Host stats\.belacca\.com/);
   assert.match(caddy, /preserves and appends X-Forwarded-For by default/);
@@ -381,11 +382,58 @@ test('animated layers stay visible, multi-character, and reduced-motion aware', 
   assert.match(js, /!prefersReducedMotion/);
 });
 
+test('portfolio SLO contract defines the durable user-journey measurement', async () => {
+  const slo = JSON.parse(await read('portfolio-slo.json'));
+  const schema = JSON.parse(await read('portfolio-slo.schema.json'));
+  const readme = await read('README.md');
+  const reliability = await read('reliability.html');
+  assert.equal(slo.schema_version, 'belacca.portfolio-slo.v1');
+  assert.equal(slo.objective.target, 0.99);
+  assert.equal(slo.objective.window, '30d');
+  assert.equal(slo.objective.classification, 'internal_objective');
+  assert.equal(slo.objective.sla, false);
+  assert.equal(slo.measurement.state, 'not_reportable');
+  assert.equal(slo.measurement.build_metadata_is_evidence, false);
+  assert.equal(slo.sli.id, 'portfolio_user_journey_availability');
+  assert.equal(slo.sli.calculation, 'good_events / total_events');
+  assert.deepEqual(slo.sli.checks.map(({ id, path }) => ({ id, path })), [{ id: 'health', path: '/health' }, { id: 'homepage', path: '/' }]);
+  assert.equal(slo.journey_assertions.path_and_query_preserved, true);
+  assert.equal(slo.dependency_policy.primary_availability_impact, 'excluded');
+  assert.equal(slo.freshness_policy.build_identifier_role.includes('never availability evidence'), true);
+  assert.equal(slo.rollback.validator, 'scripts/gitops-rollback-check.sh');
+  assert.equal(schema.properties.objective.properties.target.const, 0.99);
+  assert.match(readme, /durable portfolio SLO contract/);
+  assert.match(reliability, /portfolio SLI is defined as one external journey/);
+  assert.match(reliability, /analytics failure is excluded from the primary event/);
+  assert.doesNotMatch(JSON.stringify(slo), /__BUILD_SHA|BUILD_RUN_ID|uptime/i);
+});
+
+test('synthetic and rollback validators are fail-closed and deterministic', async () => {
+  const synthetic = await read('scripts/synthetic-check.sh');
+  const runtime = await read('scripts/runtime-check.sh');
+  const rollback = await read('scripts/gitops-rollback-check.sh');
+  assert.match(synthetic, /REQUIRE_SYNTHETIC/);
+  assert.match(synthetic, /Cache-Control/);
+  assert.match(synthetic, /SYNTHETIC_ALIAS_URLS/);
+  assert.match(synthetic, /path\/query/);
+  assert.match(runtime, /failing analytics upstream/);
+  assert.match(runtime, /\/health and \/ remain healthy/);
+  assert.match(runtime, /expected fixture 503/);
+  assert.match(runtime, /chmod 0644/);
+  assert.match(runtime, /fault-server did not answer its local health probe/);
+  assert.match(runtime, /site container exited before publishing its port/);
+  assert.match(rollback, /git revert/);
+  assert.match(rollback, /deploy\/kustomization\.yaml/);
+  assert.match(rollback, /operator-run production drill/);
+  for (const script of [synthetic, runtime, rollback]) assert.doesNotMatch(script, /kubectl apply|flux reconcile|gh auth login/);
+});
+
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {
   const dockerfile = await read('Dockerfile');
   const caddy = await read('Caddyfile');
   assert.match(dockerfile, /docker\.io\/library\/caddy:2\.10\.2-alpine/);
   assert.match(caddy, /@health path \/health/);
+  assert.match(caddy, /@homepage path \/\s+header @homepage Cache-Control "no-cache, must-revalidate"/);
   assert.match(caddy, /@reliability path \/reliability\.html/);
   assert.match(caddy, /header @statushtml Cache-Control "no-store"/);
   assert.match(caddy, /header @styles Cache-Control "public, max-age=3600, must-revalidate"/);
@@ -395,6 +443,7 @@ test('container serves a health endpoint with hardened headers and cache behavio
   assert.match(caddy, /Referrer-Policy/);
   assert.match(caddy, /Permissions-Policy/);
   assert.match(caddy, /connect-src 'self' https:\/\/raw\.githubusercontent\.com/);
+  assert.match(dockerfile, /COPY [^\n]*portfolio-slo\.json portfolio-slo\.schema\.json/);
 });
 
 test('AI assistance and status boundaries are documented', async () => {
