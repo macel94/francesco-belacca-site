@@ -125,14 +125,14 @@ test('public reliability claims identify evidence limits and unproven objectives
     /current service levels are calculated from the good and bad observations already available/i,
     /latest rolling 30-day window/i,
     /external user-journey checks now cover the portfolio, Pong, and analytics\s+collector/i,
-    /authenticated dashboard checks remain unconfigured/i,
+    /authenticated dashboard checks await a reviewed synthetic identity/i,
     /Native Prometheus is private diagnostic\s+telemetry/,
     /not external availability proof/,
     /99%[\s\S]{0,120}internal objective, not an SLA/,
-    /no paging destination is provisioned/i,
+    /Alertmanager[\s\S]{0,160}Telegram/i,
     /off-cluster backup/,
     /health-aware failover/,
-    /real failure drills are claimed/,
+    /real failure drills remain separate follow-up work|real failure drills remain unclaimed/,
     /controlled-drill recovery P95 under six minutes remains unproven/
   ];
   for (const document of documents) {
@@ -190,7 +190,7 @@ test('reliability SLO surface renders measured history without becoming current 
   assert.doesNotMatch(script, /innerHTML\s*=\s*service\.(?:name|id)/);
 });
 
-test('public status stays unknown until a fresh automated external observation supplies data', async () => {
+test('public status uses a freshness-safe fallback and measured uptime contract', async () => {
   const html = await read('status.html');
   const script = await read('status.js');
   const data = JSON.parse(await read('status.json'));
@@ -206,7 +206,8 @@ test('public status stays unknown until a fresh automated external observation s
   assert.equal(contract.properties.sanitized.const, true);
   assert.match(html, /<main id="status-main" tabindex="-1">/);
   assert.match(html, /unknown/);
-  assert.match(html, /This page never infers health from its own response/);
+  assert.doesNotMatch(html, /not configured/);
+  assert.match(html, /never infers health from its own response/);
   assert.match(html, /hourly external observation/);
   assert.match(html, /native cluster/);
   assert.match(script, /monitoring_policy/);
@@ -214,7 +215,9 @@ test('public status stays unknown until a fresh automated external observation s
   assert.match(script, /Status data is unavailable or invalid/);
   assert.match(script, /const remoteStatusURL = 'https:\/\/raw\.githubusercontent\.com\/macel94\/belacca-status\/main\/status\.json'/);
   assert.doesNotMatch(script, /slo\.json/);
-  assert.doesNotMatch(html, /99\.99%|all systems nominal|uptime[^<]{0,20}\d+%/i);
+  assert.doesNotMatch(html, /99\.99%|all systems nominal/i);
+  assert.match(script, /safe\.uptime\.window/);
+  assert.match(script, /safe\.uptime\.observations/);
 });
 
 test('public status assets are packaged, linked, and not cached as live telemetry', async () => {

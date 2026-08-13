@@ -15,9 +15,10 @@ The browser accepts only `belacca.public-status.v2` artifacts that are:
 - covered by a human-approved monitoring policy;
 - composed of bounded, source-linked component and incident records.
 
-Missing, malformed, expired, or unavailable remote data falls back to
-`unknown / not configured`. The checked-in local `status.json` is only a safe
-fallback and is not a live telemetry feed. Production image promotion is
+Missing, malformed, expired, or unavailable remote data falls back to a safe
+`unknown` state with human-readable “awaiting fresh evidence” copy. The
+checked-in local `status.json` is only a safe fallback and is not a live
+telemetry feed. Production image promotion is
 separate: CI writes an exact image digest to the deployment manifest, while
 `latest` remains only a registry convenience alias.
 
@@ -33,7 +34,7 @@ monitoring prerequisite until UDP ingress is enabled. The internal objective is
 measured level from observed good and bad journeys, then uses the latest rolling
 30-day window after the history spans 30 days. It stores no response bodies, room
 IDs, player names, addresses, cookies, tokens, internal hostnames, or raw
-exception messages. Authenticated dashboard checks remain unconfigured.
+exception messages. Authenticated dashboard checks await a reviewed synthetic identity.
 
 The portfolio SLI is versioned locally in [`portfolio-slo.json`](portfolio-slo.json):
 one total event is the combined `/health` and homepage journey, and it is good
@@ -45,8 +46,13 @@ preservation are journey assertions, not separate SLO services. GoatCounter's
 same-origin `/count` proxy is a diagnostic dependency and is excluded from the
 primary availability event when the portfolio page remains available.
 
-The policy approval applies to the monitored services, the internal 99%/30d
-objective, thresholds, freshness TTL, redaction rules, and publication behavior.
+The public status uptime value is the ratio of good critical observations to
+all good and bad critical observations in the recent 24-hour window. When the
+history is shorter than a complete 24-hour horizon, the page reports
+`available history / 24h` and includes the observation count instead of showing
+an absent setting. The policy approval applies to the monitored services, the
+internal 99%/30d objective, thresholds, freshness TTL, redaction rules, and
+publication behavior.
 Individual observations are automated; the page does not claim a person
 manually approved each hourly result. The public page does not render `slo.json`
 and does not turn error-budget state into an incident or paging signal.
