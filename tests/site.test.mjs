@@ -160,7 +160,13 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(workflow, /- 'Caddyfile'/);
   assert.match(workflow, /docker\/setup-buildx-action@[0-9a-f]{40}/);
   assert.match(workflow, /actions\/attest@[0-9a-f]{40}/);
-  assert.match(workflow, /subject-digest: \$\{\{ steps\.build\.outputs\.digest \}\}/);
+  assert.match(workflow, /subject-digest: \$\{\{ steps\.image\.outputs\.digest \}\}/);
+  assert.match(workflow, /image-ref: \$\{\{ steps\.image\.outputs\.reference \}\}/);
+  assert.match(workflow, /predicate-type: https:\/\/belacca\.com\/attestations\/vulnerability\/v1/);
+  assert.match(workflow, /predicate-path: francesco-belacca-site\.vulnerability-decision\.json/);
+  assert.match(workflow, /native-production-v1 promotion blocked/);
+  assert.match(workflow, /IMAGE_DIGEST: \$\{\{ steps\.image\.outputs\.digest \}\}/);
+  assert.match(workflow, /Record deployed immutable image/);
   assert.match(workflow, /push-to-registry: true/);
   assert.match(workflow, /provenance: false/);
   assert.match(workflow, /sbom: true/);
@@ -427,6 +433,15 @@ test('portfolio SLO contract defines the durable user-journey measurement', asyn
   assert.doesNotMatch(JSON.stringify(slo), /__BUILD_SHA|BUILD_RUN_ID|uptime/i);
 });
 
+test('vulnerability decision generator is packaged and fail-closed', async () => {
+  const script = await read('scripts/create-vulnerability-decision.mjs');
+  const decisionTests = await read('tests/vulnerability-decision.test.mjs');
+  assert.match(script, /native-production-v1/);
+  assert.match(script, /knownUnfixed/);
+  assert.match(decisionTests, /fixed medium findings remain promotable/);
+  assert.match(decisionTests, /high, critical, and known-unfixed/);
+});
+
 test('synthetic and rollback validators are fail-closed and deterministic', async () => {
   const synthetic = await read('scripts/synthetic-check.sh');
   const runtime = await read('scripts/runtime-check.sh');
@@ -462,6 +477,7 @@ test('container serves a health endpoint with hardened headers and cache behavio
   assert.match(caddy, /Referrer-Policy/);
   assert.match(caddy, /Permissions-Policy/);
   assert.match(caddy, /connect-src 'self' https:\/\/raw\.githubusercontent\.com/);
+  assert.match(await read('deploy/kustomization.yaml'), /newTag: sha-[0-9a-f]{40}\n\s+digest: sha256:[0-9a-f]{64}/);
   assert.match(dockerfile, /COPY [^\n]*portfolio-slo\.json portfolio-slo\.schema\.json/);
 });
 

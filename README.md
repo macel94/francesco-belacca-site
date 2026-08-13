@@ -63,21 +63,25 @@ curl -fsS http://localhost:8080/health
 ## Delivery
 
 `.github/workflows/test-and-publish.yml` runs the Node test suite, builds the
-container, publishes immutable SHA-tagged images to GHCR, and records the
-published tag in `deploy/kustomization.yaml`. The image build substitutes the
-source commit and its short form into the site as build metadata; this identifies
-the artifact but is not an availability measurement. Flux in the hosting cluster
-watches this repository and reconciles that deployment manifest.
+container, publishes an immutable SHA-tagged image to GHCR, scans the pushed
+image digest, signs provenance/SBOM/vulnerability decision attestations, and
+records both the human-readable SHA tag and exact `sha256` digest in
+`deploy/kustomization.yaml`. The image build substitutes the source commit and
+its short form into the site as build metadata; this identifies the artifact but
+is not an availability measurement. Flux in the hosting cluster watches this
+repository and reconciles that immutable deployment manifest. The `latest`
+registry tag is only a convenience alias; native production never deploys it.
 
 The policy and evidence pipeline exists and is live. The durable portfolio SLO contract is [`portfolio-slo.json`](portfolio-slo.json), with the operator procedure in [`docs/portfolio-reliability-checks.md`](docs/portfolio-reliability-checks.md): one external probe is one total event, and it is good only when both `/health` and `/` return their expected successful responses. The 99% target is an internal objective, not an SLA. The probe also supports out-of-band alias and path-preserving redirect assertions.
 
 The external monitoring path is live. `belacca-status` publishes sanitized `status.json` observations and durable `slo.json` evidence from its external failure domain. Current service levels are calculated from the good and bad observations already available: good observations divided by good plus bad observations; observed counts and coverage are published alongside each number. Once the history spans 30 days, the denominator becomes the latest rolling 30-day window. External user-journey checks now cover the portfolio, Pong, and analytics collector; analytics uses `/status` plus same-origin `/count`, and representative portfolio aliases are also checked. Optional authenticated dashboard and Flux checks remain unconfigured and fail closed as configuration-unknown until an operator-managed identity is provisioned. Missing or malformed slots remain visible as coverage context and never count as success.
 
 The portfolio synthetic checks health, homepage HTML/canonical metadata, cache freshness, and (when configured out of band) aliases plus path/query preservation. GoatCounter is deliberately outside the primary portfolio availability SLI: `scripts/runtime-check.sh` runs a disposable site with a failing analytics upstream and proves that `/health` and `/` still work. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. No paging destination is provisioned; no off-cluster backup, health-aware failover, or real failure drills are claimed. A separate controlled-drill recovery P95 under six minutes remains unproven. `scripts/gitops-rollback-check.sh` proves reviewed Git revert recovery of the Kustomize desired image tag in an isolated repository; a production Flux reconciliation drill and external observation are operator follow-up, not claimed evidence. The reliability page describes these boundaries rather than implying that they exist.
-Image delivery now has a registry SBOM and GitHub Artifact Attestation
-provenance. Verify an immutable GHCR image with
-`scripts/verify-attestation.sh`; live admission or Flux enforcement is still not
-configured.
+Image delivery now has registry SBOM, provenance, and signed
+`native-production-v1` vulnerability-decision attestations for the exact image
+digest. Verify an immutable GHCR image with `scripts/verify-attestation.sh`;
+Kyverno admission requires the digest plus all matching attestations before a
+new production Pod can start.
 
 ### Supply chain and synthetic endpoint check
 

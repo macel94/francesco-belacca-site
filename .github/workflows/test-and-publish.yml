@@ -100,18 +100,89 @@ jobs:
             ghcr.io/macel94/francesco-belacca-site:latest
           provenance: false
           sbom: true
+      - name: Set immutable image identity
+        id: image
+        env:
+          IMAGE_NAME: ghcr.io/macel94/francesco-belacca-site
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -euo pipefail
+          echo "reference=${IMAGE_NAME}@${IMAGE_DIGEST}" >> "$GITHUB_OUTPUT"
+          echo "digest=${IMAGE_DIGEST}" >> "$GITHUB_OUTPUT"
+
+      - name: Scan the pushed image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ steps.image.outputs.reference }}
+          format: json
+          output: francesco-belacca-site.trivy.json
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          ignore-unfixed: false
+          exit-code: '0'
+
+      - name: Create vulnerability decision
+        env:
+          IMAGE_NAME: ghcr.io/macel94/francesco-belacca-site
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          node scripts/create-vulnerability-decision.mjs \
+            --input francesco-belacca-site.trivy.json \
+            --output francesco-belacca-site.vulnerability-decision.json \
+            --image "$IMAGE_NAME" \
+            --digest "$IMAGE_DIGEST"
+          node --input-type=module -e '
+            import { readFile } from "node:fs/promises";
+            const decision = JSON.parse(await readFile("francesco-belacca-site.vulnerability-decision.json", "utf8"));
+            if (["HIGH", "CRITICAL"].includes(decision.maxSeverity) || decision.knownUnfixed) {
+              throw new Error(`native-production-v1 promotion blocked: maxSeverity=${decision.maxSeverity}, knownUnfixed=${decision.knownUnfixed}`);
+            }
+          '
+
+      - name: Generate registry SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          image: ${{ steps.image.outputs.reference }}
+          format: cyclonedx-json
+          output-file: francesco-belacca-site.sbom.cdx.json
+          upload-artifact: false
+
       - name: Attest image provenance with GitHub
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
         with:
           subject-name: ghcr.io/macel94/francesco-belacca-site
-          subject-digest: ${{ steps.build.outputs.digest }}
+          subject-digest: ${{ steps.image.outputs.digest }}
           push-to-registry: true
-      - name: Record deployed image
+
+      - name: Attest image SBOM with GitHub
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ghcr.io/macel94/francesco-belacca-site
+          subject-digest: ${{ steps.image.outputs.digest }}
+          sbom-path: francesco-belacca-site.sbom.cdx.json
+          push-to-registry: true
+
+      - name: Attest native production vulnerability decision
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-name: ghcr.io/macel94/francesco-belacca-site
+          subject-digest: ${{ steps.image.outputs.digest }}
+          predicate-type: https://belacca.com/attestations/vulnerability/v1
+          predicate-path: francesco-belacca-site.vulnerability-decision.json
+          push-to-registry: true
+
+      - name: Record deployed immutable image
         shell: bash
+        env:
+          IMAGE_DIGEST: ${{ steps.image.outputs.digest }}
         run: |
           set -euo pipefail
           tag="sha-${GITHUB_SHA}"
-          sed -i -E "s#(newTag: ).*#\\1${tag}#" deploy/kustomization.yaml
+          sed -i -E "s#(    newTag: ).*#\\1${tag}#" deploy/kustomization.yaml
+          if grep -q '^    digest:' deploy/kustomization.yaml; then
+            sed -i -E "s#(    digest: ).*#\\1${IMAGE_DIGEST}#" deploy/kustomization.yaml
+          else
+            sed -i "/^    newTag:/a\\    digest: ${IMAGE_DIGEST}" deploy/kustomization.yaml
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add deploy/kustomization.yaml

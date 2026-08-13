@@ -17,7 +17,9 @@ The browser accepts only `belacca.public-status.v2` artifacts that are:
 
 Missing, malformed, expired, or unavailable remote data falls back to
 `unknown / not configured`. The checked-in local `status.json` is only a safe
-fallback and is not a live telemetry feed.
+fallback and is not a live telemetry feed. Production image promotion is
+separate: CI writes an exact image digest to the deployment manifest, while
+`latest` remains only a registry convenience alias.
 
 ## Evidence boundary
 
