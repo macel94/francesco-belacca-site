@@ -101,7 +101,8 @@ test('reliability copy separates current capability from planned work', async ()
   assert.match(html, /latest rolling 30-day window/);
   assert.doesNotMatch(html, /30-day SLO values remain [^<]*not reportable/);
   assert.match(html, /external journeys \/ current/);
-  assert.match(html, /no scheduled encrypted off-cluster backup/);
+  assert.match(html, /encrypted off-cluster AWS backup destination is provisioned and synthetic-tested/);
+  assert.match(html, /scheduled production backup automation remains gated/);
   assert.match(html, /registry SBOM and GitHub Artifact Attestation provenance/);
   assert.match(html, /no admission or Flux verification is configured/);
   assert.match(html, /GitHub Artifact Attestation provenance/);
@@ -110,6 +111,7 @@ test('reliability copy separates current capability from planned work', async ()
   assert.doesNotMatch(html, /99\.99%/);
   assert.doesNotMatch(html, /all systems nominal/);
   assert.match(html, /native production|status\.json|slo\.json/u);
+  assert.match(html, /USD 8 monthly spend guard/);
   assert.match(html, /data-slo-services/);
   assert.match(html, /reliability\.js/);
   assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
@@ -131,6 +133,7 @@ test('public reliability claims identify evidence limits and unproven objectives
     /99%[\s\S]{0,120}internal objective, not an SLA/,
     /Alertmanager[\s\S]{0,160}Telegram/i,
     /off-cluster backup/,
+    /encrypted off-cluster AWS backup destination is provisioned and synthetic-tested/,
     /health-aware failover/,
     /real failure drills remain separate follow-up work|real failure drills remain unclaimed/,
     /controlled-drill recovery P95 under six minutes remains unproven/
@@ -205,6 +208,8 @@ test('public status uses a freshness-safe fallback and measured uptime contract'
   assert.equal(data.uptime.value, null);
   assert.equal(contract.properties.sanitized.const, true);
   assert.match(html, /<main id="status-main" tabindex="-1">/);
+  assert.match(html, /Backup destination is ready/);
+  assert.match(html, /scheduled backup jobs remain gated/);
   assert.match(html, /unknown/);
   assert.doesNotMatch(html, /not configured/);
   assert.match(html, /never infers health from its own response/);
