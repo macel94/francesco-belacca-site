@@ -1,0 +1,68 @@
+{
+  "$schema": "./reliability-evidence.schema.json",
+  "schema_version": "belacca.reliability-evidence.v1",
+  "sanitized": true,
+  "generated_at": "2026-08-15T11:44:32Z",
+  "source_repository": "https://github.com/macel94/belacca-gitops",
+  "entries": [
+    {
+      "id": "backup-upload-restore",
+      "name": "Backup upload and isolated restore",
+      "state": "verified",
+      "summary": "Live upload and isolated restore verification passed for Pong, GoatCounter, and Dex without writing production PVCs.",
+      "observed_at": "2026-08-15T11:44:32Z",
+      "source_updated_at": "2026-08-15T11:50:26Z",
+      "source_references": [
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/evidence/aws-native-backup-production-20260815.json",
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/BACKUP-CONTRACT.md"
+      ],
+      "limitations": [
+        "This does not prove retention targets, a full application rehearsal, or an RPO/RTO guarantee."
+      ]
+    },
+    {
+      "id": "backup-retention",
+      "name": "Backup retention history",
+      "state": "outstanding",
+      "summary": "The evidence artifact still records 35 daily retention points, 12 monthly retention points, and full application rehearsal as remaining evidence.",
+      "observed_at": "2026-08-15T11:44:32Z",
+      "source_updated_at": "2026-08-15T11:50:26Z",
+      "source_references": [
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/evidence/aws-native-backup-production-20260815.json",
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/BACKUP-RUNBOOK.md"
+      ],
+      "limitations": [
+        "The destination and successful isolated restore are not the same as a completed retention guarantee."
+      ]
+    },
+    {
+      "id": "notification-routing",
+      "name": "Alertmanager notification routing",
+      "state": "bounded",
+      "summary": "The sanitized evidence records a received Alertmanager-to-Telegram notification, while post-change routing verification remains outstanding.",
+      "observed_at": null,
+      "source_updated_at": "2026-08-13T17:41:47Z",
+      "source_references": [
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/notification-verification-evidence.json",
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/NOTIFICATIONS.md"
+      ],
+      "limitations": [
+        "The source explicitly says the evidence predates the diagnostic/page receiver split and is not a current live verification of that change."
+      ]
+    },
+    {
+      "id": "portfolio-replicas",
+      "name": "Portfolio replica declaration",
+      "state": "declared",
+      "summary": "The deployment manifest declares two site replicas; runtime readiness and traffic distribution are not claimed by this ledger.",
+      "observed_at": null,
+      "source_updated_at": null,
+      "source_references": [
+        "https://github.com/macel94/francesco-belacca-site/blob/main/deploy/deployment.yaml"
+      ],
+      "limitations": [
+        "A desired replica count is configuration evidence, not a live Kubernetes observation."
+      ]
+    }
+  ]
+}

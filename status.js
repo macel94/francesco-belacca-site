@@ -1,5 +1,6 @@
 (() => {
   const remoteStatusURL = 'https://raw.githubusercontent.com/macel94/belacca-status/main/status.json';
+  const localStatusURL = '/status.json';
   const refreshIntervalMs = 5 * 60 * 1000;
   const fallback = {
     sanitized: true,
@@ -33,6 +34,23 @@
   const isStatus = (value) => ['operational', 'degraded', 'incident', 'unknown'].includes(value);
   const validComponent = (item) => item && typeof item === 'object' && typeof item.id === 'string' && item.id.length <= 80 && typeof item.name === 'string' && item.name.length > 0 && item.name.length <= 100 && typeof item.critical === 'boolean' && isStatus(item.status) && typeof item.summary === 'string' && item.summary.length > 0 && item.summary.length <= 240 && isDate(item.evidence_timestamp) && Number.isInteger(item.duration_ms) && item.duration_ms >= 0 && item.duration_ms <= 120000 && isReferenceList(item.source_references, true);
   const validIncident = (item) => item && typeof item === 'object' && typeof item.id === 'string' && item.id.length > 0 && item.id.length <= 100 && ['investigating', 'identified', 'monitoring', 'resolved'].includes(item.status) && typeof item.summary === 'string' && item.summary.length > 0 && item.summary.length <= 240 && isDate(item.started_at) && isDate(item.updated_at) && isReferenceList(item.source_references, true);
+  const validBootstrapData = (data) => data && typeof data === 'object' && !Array.isArray(data)
+    && data.schema_version === 'belacca.public-status.v2'
+    && data.sanitized === true
+    && data.publication_state === 'not_configured'
+    && data.status === 'unknown'
+    && data.observation_id === null
+    && data.observed_at === null
+    && data.updated_at === null
+    && data.evidence_timestamp === null
+    && data.valid_until === null
+    && data.monitoring_policy === null
+    && data.publisher && data.publisher.name === null && data.publisher.source_reference === null
+    && data.uptime && data.uptime.state === 'not_configured' && data.uptime.value === null && data.uptime.source_reference === null
+    && Array.isArray(data.components) && data.components.length === 0
+    && Array.isArray(data.incidents) && data.incidents.length === 0
+    && isReferenceList(data.source_references, true)
+    && Array.isArray(data.notes);
   const validPublishedData = (data) => {
     if (!data || typeof data !== 'object' || Array.isArray(data)) return false;
     if (data.schema_version !== 'belacca.public-status.v2' || data.sanitized !== true || data.publication_state !== 'published') return false;
@@ -131,17 +149,36 @@
     }
   };
 
+  const fetchJSON = async (url) => {
+    const response = await fetch(`${url}?refresh=${Date.now()}`, { cache: 'no-store', credentials: 'omit', mode: 'cors' });
+    if (!response.ok) throw new Error(`status artifact HTTP ${response.status}`);
+    return response.json();
+  };
+
   const refresh = async () => {
     try {
-      const response = await fetch(`${remoteStatusURL}?refresh=${Date.now()}`, { cache: 'no-store', credentials: 'omit', mode: 'cors' });
-      if (!response.ok) throw new Error(`status artifact HTTP ${response.status}`);
-      const data = await response.json();
+      const data = await fetchJSON(remoteStatusURL);
       if (!validPublishedData(data)) throw new Error('status artifact is invalid or expired');
       lastPublishedData = data;
       render(data);
+      return;
     } catch {
-      if (lastPublishedData && validPublishedData(lastPublishedData)) render(lastPublishedData, 'Live refresh is unavailable; showing the last fresh external observation.');
-      else render(fallback, 'Status data is unavailable or invalid; awaiting the next fresh external observation.');
+      try {
+        const localData = await fetchJSON(localStatusURL);
+        if (!validBootstrapData(localData) && !validPublishedData(localData)) throw new Error('local status artifact is invalid');
+        if (validPublishedData(localData)) {
+          lastPublishedData = localData;
+          render(localData, 'The external publisher is unavailable; showing the checked-in fresh observation.');
+        } else if (lastPublishedData && validPublishedData(lastPublishedData)) {
+          render(lastPublishedData, 'The external publisher is unavailable; showing the last fresh external observation.');
+        } else {
+          render(fallback, 'The external publisher is unavailable; the checked-in artifact confirms an unknown state.');
+        }
+        return;
+      } catch {
+        if (lastPublishedData && validPublishedData(lastPublishedData)) render(lastPublishedData, 'Live refresh is unavailable; showing the last fresh external observation.');
+        else render(fallback, 'Status data is unavailable or invalid; awaiting the next fresh external observation.');
+      }
     }
   };
 

@@ -96,14 +96,15 @@ test('reliability page meets basic keyboard and landmark expectations', async ()
 test('reliability copy separates current capability from planned work', async () => {
   const html = await read('reliability.html');
   assert.match(html, /not a live status page/);
-  assert.match(html, /external monitoring path is live/);
+  assert.match(html, /external monitoring path publishes/);
   assert.match(html, /current service levels are calculated from the good and bad observations already available/i);
+  assert.match(html, /sanitized evidence ledger/);
   assert.match(html, /latest rolling 30-day window/);
   assert.doesNotMatch(html, /30-day SLO values remain [^<]*not reportable/);
   assert.match(html, /external journeys \/ current/);
-  assert.match(html, /reliable immutable off-cluster AWS backup destination is provisioned/);
-  assert.match(html, /live uploads plus isolated restore verification passed/);
-  assert.match(html, /retention history, full application rehearsal, and notification evidence remain outstanding/);
+  assert.match(html, /Recovery evidence is bounded/);
+  assert.match(html, /data-evidence-ledger/);
+  assert.match(html, /reliability-evidence\.js/);
   assert.match(html, /registry SBOM and GitHub Artifact Attestation provenance/);
   assert.match(html, /no admission or Flux verification is configured/);
   assert.match(html, /GitHub Artifact Attestation provenance/);
@@ -112,7 +113,6 @@ test('reliability copy separates current capability from planned work', async ()
   assert.doesNotMatch(html, /99\.99%/);
   assert.doesNotMatch(html, /all systems nominal/);
   assert.match(html, /native production|status\.json|slo\.json/u);
-  assert.match(html, /USD 8 monthly spend guard/);
   assert.match(html, /data-slo-services/);
   assert.match(html, /reliability\.js/);
   assert.doesNotMatch(html, /headlamp-google-oauth|belakkuz@gmail\.com|client_secret|private_key/);
@@ -123,8 +123,8 @@ test('public reliability claims identify evidence limits and unproven objectives
   const readme = await read('README.md');
   const documents = [html, readme];
   const markers = [
-    /policy and evidence pipeline exists/,
-    /external monitoring path is live/,
+    /(?:policy and evidence pipeline exists|external monitoring path publishes)/,
+    /external monitoring path (?:is live|publishes)/,
     /current service levels are calculated from the good and bad observations already available/i,
     /latest rolling 30-day window/i,
     /external user-journey checks now cover the portfolio, Pong, and analytics\s+collector/i,
@@ -134,8 +134,8 @@ test('public reliability claims identify evidence limits and unproven objectives
     /99%[\s\S]{0,120}internal objective, not an SLA/,
     /Alertmanager[\s\S]{0,160}Telegram/i,
     /off-cluster (?:AWS )?backup/,
-    /reliable immutable off-cluster AWS backup destination is provisioned/,
-    /(?:live uploads plus isolated restore verification passed|verified production backup uploads and isolated restores)/i,
+    /evidence ledger|reliability evidence ledger/i,
+    /backup|notification|configuration claims/i,
     /health-aware failover/,
     /real failure drills remain separate follow-up work|real failure drills remain unclaimed/,
     /controlled-drill recovery P95 under six minutes remains unproven/
@@ -157,7 +157,7 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(dockerfile, /__BUILD_RUN_URL__/);
   assert.match(dockerfile, /actions\/runs/);
   assert.match(workflow, /BUILD_RUN_ID=\$\{\{ github\.run_id \}\}/);
-  assert.match(dockerfile, /COPY index\.html reliability\.html reliability\.js status\.html privacy\.html/);
+  assert.match(dockerfile, /COPY index\.html reliability\.html reliability\.js reliability-evidence\.js reliability-evidence\.json reliability-evidence\.schema\.json status\.html privacy\.html/);
   assert.match(dockerfile, /COPY Caddyfile \/etc\/caddy\/Caddyfile/);
   assert.match(dockerfile, /\/srv\/index\.html/);
   assert.match(workflow, /- 'reliability\.html'/);
@@ -180,6 +180,26 @@ test('reliability metadata is safe and build assets are packaged', async () => {
   assert.match(workflow, /artifact-metadata: write/);
   assert.match(caddy, /X-Content-Type-Options/);
   assert.doesNotMatch(html, /BUILD_TOKEN|API_KEY|PASSWORD|BEGIN (?:RSA|OPENSSH) PRIVATE KEY/);
+});
+
+test('reliability evidence ledger is sanitized, bounded, and source-linked', async () => {
+  const evidence = JSON.parse(await read('reliability-evidence.json'));
+  const schema = JSON.parse(await read('reliability-evidence.schema.json'));
+  const validator = await read('scripts/validate-reliability-evidence.mjs');
+  const reliability = await read('reliability.html');
+  const renderer = await read('reliability-evidence.js');
+  assert.equal(evidence.schema_version, 'belacca.reliability-evidence.v1');
+  assert.equal(evidence.sanitized, true);
+  assert.equal(schema.properties.schema_version.const, 'belacca.reliability-evidence.v1');
+  assert.ok(evidence.entries.some((entry) => entry.id === 'backup-upload-restore' && entry.state === 'verified'));
+  assert.ok(evidence.entries.some((entry) => entry.id === 'backup-retention' && entry.state === 'outstanding'));
+  assert.ok(evidence.entries.some((entry) => entry.id === 'notification-routing' && entry.state === 'bounded'));
+  assert.ok(evidence.entries.some((entry) => entry.id === 'portfolio-replicas' && entry.state === 'declared'));
+  assert.match(reliability, /id="evidence"/);
+  assert.match(reliability, /data-evidence-ledger/);
+  assert.match(renderer, /reliability-evidence\.json/);
+  assert.match(validator, /source-linked, bounded/);
+  assert.doesNotMatch(JSON.stringify(evidence), /token|password|private[_ -]?key|player|room[_ -]?id|127\.0\.0\.1/i);
 });
 
 test('reliability SLO surface renders measured history without becoming current status', async () => {
@@ -210,9 +230,9 @@ test('public status uses a freshness-safe fallback and measured uptime contract'
   assert.equal(data.uptime.value, null);
   assert.equal(contract.properties.sanitized.const, true);
   assert.match(html, /<main id="status-main" tabindex="-1">/);
-  assert.match(html, /Backups are verified/);
-  assert.match(html, /Live uploads and isolated restore verification passed/);
-  assert.match(html, /retention history, full application rehearsal where required, and notification evidence remain outstanding/i);
+  assert.match(html, /Recovery is documented elsewhere/);
+  assert.match(html, /reliability evidence ledger/);
+  assert.doesNotMatch(html, /Backups are verified/);
   assert.match(html, /unknown/);
   assert.doesNotMatch(html, /not configured/);
   assert.match(html, /never infers health from its own response/);
@@ -221,6 +241,9 @@ test('public status uses a freshness-safe fallback and measured uptime contract'
   assert.match(script, /monitoring_policy/);
   assert.match(script, /valid_until/);
   assert.match(script, /Status data is unavailable or invalid/);
+  assert.match(script, /const localStatusURL = '\/status\.json'/);
+  assert.match(script, /validBootstrapData/);
+  assert.match(script, /checked-in artifact confirms an unknown state/);
   assert.match(script, /const remoteStatusURL = 'https:\/\/raw\.githubusercontent\.com\/macel94\/belacca-status\/main\/status\.json'/);
   assert.doesNotMatch(script, /slo\.json/);
   assert.doesNotMatch(html, /99\.99%|all systems nominal/i);
@@ -239,10 +262,10 @@ test('public status assets are packaged, linked, and not cached as live telemetr
   assert.match(home, /href="\/status\.html"/);
   assert.match(reliability, /href="\/status\.html"/);
   assert.match(html, /<link rel="canonical" href="https:\/\/francesco\.belacca\.com\/status\.html" \/>/);
-  for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
-  for (const path of ['status.html', 'status.json', 'status.js']) assert.match(caddy, new RegExp(`path \\/${path.replace('.', '\\\.')}`));
+  for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js', 'reliability-evidence.js', 'reliability-evidence.json', 'reliability-evidence.schema.json']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
+  for (const path of ['status.html', 'status.json', 'status.js', 'reliability-evidence.json', 'reliability-evidence.js']) assert.match(caddy, new RegExp(`path \\/${path.replace('.', '\\\.')}`));
   assert.match(caddy, /@statusjson path \/status\.json[\s\S]*?header @statusjson Cache-Control "no-store"/);
-  for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js']) assert.match(workflow, new RegExp(`- '${asset.replace('.', '\\.')}'`));
+  for (const asset of ['status.html', 'status.json', 'status.schema.json', 'status-contract.md', 'status.js', 'reliability-evidence.js', 'reliability-evidence.json', 'reliability-evidence.schema.json']) assert.match(workflow, new RegExp(`- '${asset.replace('.', '\\.')}'`));
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/status\.html<\/loc>/);
 });
 
@@ -331,7 +354,7 @@ test('navigation remains usable on keyboard and compact screens', async () => {
   assert.match(html, /class="skip-link" href="#top"/);
   assert.match(html, /class="mobile-menu"/);
   assert.match(html, /aria-label="Mobile navigation"/);
-  assert.match(html, /aria-label="Open to signal"/);
+  assert.match(html, /aria-label="Contact Francesco"/);
   assert.match(css, /:where\(a, summary\):focus-visible/);
   assert.match(css, /@media \(max-width: 390px\)/);
   assert.match(js, /removeAttribute\('open'\)/);

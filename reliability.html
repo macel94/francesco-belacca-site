@@ -18,6 +18,7 @@
     <script data-goatcounter="/count" async src="/count.js"></script>
     <script src="/app.js" defer></script>
     <script src="/reliability.js" defer></script>
+    <script src="/reliability-evidence.js" defer></script>
     <title>Reliability / Systems — Francesco Belacca</title>
   </head>
   <body>
@@ -37,6 +38,7 @@
           <a href="#security">security</a>
           <a href="#practice">practice</a>
           <a href="#resilience">resilience</a>
+          <a href="#evidence">evidence</a>
           <a href="/status.html">status</a>
         </nav>
         <details class="mobile-menu">
@@ -48,12 +50,13 @@
             <a href="#security">security</a>
             <a href="#practice">practice</a>
             <a href="#resilience">resilience</a>
+            <a href="#evidence">evidence</a>
             <a href="/status.html">status</a>
           </nav>
         </details>
         <div class="header-right">
           <a class="build-version" href="__BUILD_RUN_URL__" aria-label="Build commit __BUILD_SHA__; open GitHub Actions run" title="Build commit __BUILD_SHA__; open GitHub Actions run">build <code>__BUILD_SHA_SHORT__</code><span class="build-link-icon" aria-hidden="true">↗</span></a>
-          <a class="status-pill" href="mailto:francesco.belacca@hotmail.it" aria-label="Open to signal"><span class="status-dot"></span><span class="status-label">open to signal</span></a>
+          <a class="status-pill" href="mailto:francesco.belacca@hotmail.it" aria-label="Contact Francesco"><span class="status-dot"></span><span class="status-label">contact</span></a>
         </div>
       </header>
 
@@ -63,7 +66,7 @@
             <p class="eyebrow"><span class="prompt">&gt;_</span> reliability / systems notes <span class="cursor" aria-hidden="true"></span></p>
             <h1 id="systems-title">Reliability,<br /><em>with receipts.</em></h1>
             <p class="hero-lede">A public, deliberately bounded view of how the Belacca platform is built, delivered, protected, and improved.</p>
-            <p class="reliability-disclaimer"><strong>Current state:</strong> this is an architecture note, not a live status page. The policy and evidence pipeline exists and the external monitoring path is live; it publishes sanitized <code>status.json</code> and durable <code>slo.json</code> artifacts from outside the native cluster. Current service levels are calculated from the good and bad observations already available; the page shows the observed count and coverage beside each number. Once the history spans 30 days, the calculation automatically becomes the latest rolling 30-day window. Native Prometheus is private diagnostic telemetry, not external availability proof. The 99% availability target per public service is an internal objective, not an SLA; optional authenticated dashboard and Flux checks remain pending identity approval; a reliable immutable off-cluster AWS backup destination is provisioned, and live uploads plus isolated restore verification passed for Pong, GoatCounter, and Dex; retention history, full application rehearsal, and notification evidence remain outstanding; in-cluster Alertmanager now pages the operator through Telegram, while external cluster-down monitoring, health-aware failover, and real failure drills remain unclaimed.</p>
+            <p class="reliability-disclaimer"><strong>Evidence boundary:</strong> this is an architecture note, not a live status page. The policy and evidence pipeline exists, and the external monitoring path publishes sanitized <code>status.json</code> and durable <code>slo.json</code> artifacts from outside the native cluster. Current service levels are calculated from the good and bad observations already available; the page shows the observed count and coverage beside each number. Once the history spans 30 days, the calculation uses the latest rolling 30-day window. Recovery, notification, and deployment assertions are rendered from the sanitized evidence ledger below, with source and verification timestamps; it distinguishes verified evidence, bounded evidence, outstanding work, and declared configuration. Native Prometheus is private diagnostic telemetry, not external availability proof. The 99% availability target per public service is an internal objective, not an SLA; optional authenticated dashboard and Flux checks, external cluster-down monitoring, health-aware failover, and real failure drills remain unclaimed.</p>
           </div>
           <aside class="metadata-card reveal reveal-delay-1" aria-labelledby="metadata-title">
             <div class="console-top"><span id="metadata-title">release://evidence</span><span class="console-lights" aria-hidden="true"><i></i><i></i><i></i></span></div>
@@ -82,12 +85,12 @@
           <div class="architecture-flow" role="group" aria-label="Current request and delivery boundaries">
             <article class="flow-card reveal"><span class="flow-index">01 / EDGE</span><h3>HTTPS edge</h3><p>Traefik terminates public HTTPS, redirects HTTP, and routes by hostname. The portfolio and Pong have separate public routes.</p><span class="flow-code">visitor → edge</span></article>
             <div class="flow-connector" aria-hidden="true">→</div>
-            <article class="flow-card reveal reveal-delay-1"><span class="flow-index">02 / PORTFOLIO</span><h3>Static site</h3><p>Two Caddy-backed site replicas serve HTML, CSS, JavaScript, and discovery assets. <code>/health</code> is the probe endpoint.</p><span class="flow-code">edge → site service</span></article>
+            <article class="flow-card reveal reveal-delay-1"><span class="flow-index">02 / PORTFOLIO</span><h3>Static site</h3><p>The deployment declares two Caddy-backed site replicas for HTML, CSS, JavaScript, and discovery assets. <code>/health</code> is the probe endpoint; runtime readiness remains an external observation concern.</p><span class="flow-code">edge → site service</span></article>
             <div class="flow-connector" aria-hidden="true">→</div>
             <article class="flow-card reveal reveal-delay-2"><span class="flow-index">03 / PONG</span><h3>Game path</h3><p>Pong routes through a gateway to its static frontend and Go lobby API. A room receives its own Kubernetes Pod for the live game.</p><span class="flow-code">edge → gateway → room</span></article>
           </div>
           <div class="systems-grid">
-            <article class="system-card reveal"><span class="flow-index">portfolio / stateless</span><h3>Simple by default</h3><p>The portfolio is a static application. Its only runtime request is the same-origin analytics proxy; there is no CMS, browser-to-backend application API, login, or client-side framework.</p><div class="system-tags"><span>Caddy</span><span>2 replicas</span><span>/health</span></div></article>
+            <article class="system-card reveal"><span class="flow-index">portfolio / stateless</span><h3>Simple by default</h3><p>The portfolio is a static application. Its only runtime application request is the same-origin analytics proxy; there is no CMS, browser-to-backend application API, login, or client-side framework.</p><div class="system-tags"><span>Caddy</span><span>2 replicas</span><span>/health</span></div></article>
             <article class="system-card reveal reveal-delay-1"><span class="flow-index">pong / stateful boundary</span><h3>One writer on purpose</h3><p>The Pong lobby uses one API replica because its room state lives in single-writer SQLite on persistent storage. That is a known availability and scaling boundary, not hidden magic.</p><div class="system-tags"><span>Go</span><span>SQLite</span><span>RWO storage</span></div></article>
             <article class="system-card reveal reveal-delay-2"><span class="flow-index">rooms / bounded runtime</span><h3>Ephemeral game Pods</h3><p>Each game room is represented by a dedicated Pod and Service with resource limits and a deadline. Waiting, finished, failed, and orphaned rooms are cleaned by the lobby.</p><div class="system-tags"><span>WebSockets</span><span>per-room Pod</span><span>cleanup</span></div></article>
             <article class="system-card reveal reveal-delay-3"><span class="flow-index">analytics / first party</span><h3>Useful, not invasive</h3><p>Visitor analytics are sent through <code>/count</code> to the self-hosted GoatCounter service. The browser does not contact an analytics vendor directly, and the dashboard is separate from the public site.</p><div class="system-tags"><span>same origin</span><span>cookie-free</span><span>aggregate data</span></div></article>
@@ -151,7 +154,7 @@
                 <div><dt>analytics collector</dt><dd>External user-journey checks cover the public analytics collector.</dd></div>
                 <div><dt>authenticated dashboard</dt><dd>Authenticated dashboard checks await a reviewed synthetic identity.</dd></div>
               </dl>
-              <p class="planned-note"><strong>Evidence boundary:</strong> <code>portfolio-slo.json</code> defines the portfolio journey, while belacca-status publishes sanitized <code>status.json</code> current-state evidence and <code>slo.json</code> measured service levels. Each current level is <code>good observations / (good + bad observations)</code>; unknown or missing slots are displayed as coverage context and never count as success. Before 30 days of history, the denominator is the observations already available. Once the history spans 30 days, it is the latest rolling 30-day window. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. The 99% availability objective per public service is internal, not an SLA, and budget exhaustion does not by itself change public status. Alertmanager groups Flux and Prometheus signals and pages the operator through Telegram; independent cluster-down paging is deferred to platform issue 14.</p>
+              <p class="planned-note"><strong>Evidence boundary:</strong> <code>portfolio-slo.json</code> defines the portfolio journey, while belacca-status publishes sanitized <code>status.json</code> current-state evidence and <code>slo.json</code> measured service levels. Each current level is <code>good observations / (good + bad observations)</code>; unknown or missing slots are displayed as coverage context and never count as success. Recovery and notification claims are not inferred from the SLO artifact; they are linked in the evidence ledger with their own timestamps and limitations. Native Prometheus is private diagnostic telemetry, not external availability proof or a public SLO calculation. The 99% availability objective per public service is internal, not an SLA, and budget exhaustion does not by itself change public status.</p>
             </article>
           </div>
         </section>
@@ -168,14 +171,23 @@
         <section class="content-section reliability-section limitations" id="resilience" aria-labelledby="resilience-title">
           <div class="section-heading reveal"><span class="section-index">06</span><h2 id="resilience-title">Recovery has<br /><em>limits.</em></h2><p class="heading-note">Naming the failure domain is more useful than displaying an unearned uptime number.</p></div>
           <div class="resilience-grid">
-            <article class="limitation-card reveal"><span class="flow-index">backup boundary / current</span><h3>Live backups; evidence still bounded</h3><p>Pong, GoatCounter, and Dex retain SQLite data on single-writer Longhorn-backed RWO volumes with three replicas. A reliable immutable AWS S3 destination, Object Lock retention, separate writer/restore identities, and a USD 8 monthly spend guard are provisioned out of band. Live uploads and isolated restore verification passed for all three services without writing production PVCs. Thirty-five daily and twelve monthly retention points, full application rehearsal where required, and notification evidence remain outstanding.</p><p class="warning-line">Therefore: the 24-hour RPO target is documented, not an SLA or completed retention guarantee.</p></article>
+            <article class="limitation-card reveal"><span class="flow-index">backup boundary / verified with limits</span><h3>Recovery evidence is bounded</h3><p>Live upload and isolated restore verification is recorded for Pong, GoatCounter, and Dex. The destination, retention policy, and source-consistency gates are separate claims; the evidence ledger below keeps those boundaries visible instead of presenting backup capability as current service health.</p><p class="warning-line">Therefore: the 24-hour RPO target remains documented, not an SLA or completed retention guarantee.</p></article>
             <article class="limitation-card reveal reveal-delay-1"><span class="flow-index">recovery practice / current</span><h3>Safe first response</h3><p>Runbooks start with non-destructive inspection, preserve protected state, check user-facing routes and Flux health, and use a reviewed Git revert for application rollback. Native services support host restart recovery; Alertmanager pages the operator through Telegram for configured in-cluster signals, while no real failure drills are claimed.</p><p class="warning-line">A separate controlled-drill recovery P95 under six minutes remains unproven.</p></article>
             <article class="limitation-card planned-card reveal reveal-delay-2"><span class="flow-index">planned / explicitly not live</span><h3>Close the recovery loop</h3><p>The external publisher, durable SLO artifact, expanded unauthenticated journeys, and reliable off-cluster backup destination are deployed. Live uploads and isolated restore verification now pass for Pong, GoatCounter, and Dex. Next reliability work is to build 35 daily and 12 monthly retention points, complete isolated application restore rehearsals where required, test operator notifications, complete the rolling 30-day measurement window, provision authenticated dashboard/Flux journeys, add independent external cluster-down monitoring, health-aware failover, and repeatable failure drills. A live Flux rollback drill also needs production operator evidence. Each remaining item needs runtime proof before it becomes a claim here.</p><p class="planned-line">planned ≠ deployed</p></article>
           </div>
         </section>
 
+        <section class="content-section reliability-section" id="evidence" aria-labelledby="evidence-title">
+          <div class="section-heading reveal"><span class="section-index">07</span><h2 id="evidence-title">Evidence<br /><em>ledger.</em></h2><p class="heading-note" data-evidence-summary>Loading the sanitized reliability evidence ledger.</p></div>
+          <div class="status-list-card evidence-list-card reveal">
+            <ul class="status-list evidence-list" data-evidence-ledger>
+              <li>Reliability evidence will appear with the next validated ledger.</li>
+            </ul>
+          </div>
+        </section>
+
         <section class="content-section reliability-section reliability-contact" aria-labelledby="reliability-contact-title">
-          <div class="contact-card reveal"><div><span class="section-index">07 / QUESTIONS</span><h2 id="reliability-contact-title">Prefer a system<br /><em>you can inspect?</em></h2></div><div class="contact-action"><p>Source, manifests, and the limits behind this page are public.</p><a class="button button-primary" href="https://github.com/macel94/belacca-platform" target="_blank" rel="noreferrer">Inspect the platform <span aria-hidden="true">↗</span></a></div></div>
+          <div class="contact-card reveal"><div><span class="section-index">08 / QUESTIONS</span><h2 id="reliability-contact-title">Prefer a system<br /><em>you can inspect?</em></h2></div><div class="contact-action"><p>Source, manifests, and the limits behind this page are public.</p><a class="button button-primary" href="https://github.com/macel94/belacca-platform" target="_blank" rel="noreferrer">Inspect the platform <span aria-hidden="true">↗</span></a></div></div>
         </section>
       </main>
 

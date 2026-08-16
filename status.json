@@ -23,7 +23,9 @@
   },
   "components": [],
   "incidents": [],
-  "source_references": [],
+  "source_references": [
+    "https://github.com/macel94/belacca-status/blob/main/POLICY.md"
+  ],
   "notes": [
     "This artifact is the checked-in safe fallback.",
     "The live artifact is generated hourly in the separate belacca-status repository.",

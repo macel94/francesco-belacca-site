@@ -30,6 +30,10 @@
     header @appjs Cache-Control "public, max-age=3600, must-revalidate"
     @reliability path /reliability.html
     header @reliability Cache-Control "public, max-age=3600, must-revalidate"
+    @reliabilityEvidence path /reliability-evidence.json
+    header @reliabilityEvidence Cache-Control "public, max-age=3600, must-revalidate"
+    @reliabilityEvidenceJS path /reliability-evidence.js
+    header @reliabilityEvidenceJS Cache-Control "public, max-age=3600, must-revalidate"
     @statushtml path /status.html
     header @statushtml Cache-Control "no-store"
     @statusjson path /status.json

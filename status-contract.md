@@ -15,10 +15,12 @@ The browser accepts only `belacca.public-status.v2` artifacts that are:
 - covered by a human-approved monitoring policy;
 - composed of bounded, source-linked component and incident records.
 
-Missing, malformed, expired, or unavailable remote data falls back to a safe
-`unknown` state with human-readable “awaiting fresh evidence” copy. The
-checked-in local `status.json` is only a safe fallback and is not a live
-telemetry feed. Production image promotion is
+Missing, malformed, expired, or unavailable remote data first falls back to a
+validated checked-in `/status.json` artifact. The repository artifact is a
+bootstrap `unknown` state, so it cannot create a live claim; if both sources
+fail, the browser uses the same conservative in-code `unknown` fallback. A
+previously fetched remote observation may remain visible only while it is still
+fresh. The checked-in artifact is not a live telemetry feed. Production image promotion is
 separate: CI writes an exact image digest to the deployment manifest, while
 `latest` remains only a registry convenience alias.
 
@@ -55,7 +57,11 @@ internal 99%/30d objective, thresholds, freshness TTL, redaction rules, and
 publication behavior.
 Individual observations are automated; the page does not claim a person
 manually approved each hourly result. The public page does not render `slo.json`
-and does not turn error-budget state into an incident or paging signal.
+and does not turn error-budget state into an incident or paging signal. The
+status repository also publishes a reusable `badge.json` Shields endpoint
+artifact. It is refreshed by the hourly publisher and mirrors only fresh
+status; the native GitHub workflow badge separately reports publication success
+and is red when a target or monitor failure is published.
 
 ## Single-cluster limitation
 

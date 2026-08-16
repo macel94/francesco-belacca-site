@@ -7,6 +7,9 @@ on:
       - 'index.html'
       - 'reliability.html'
       - 'reliability.js'
+      - 'reliability-evidence.js'
+      - 'reliability-evidence.json'
+      - 'reliability-evidence.schema.json'
       - 'status.html'
       - 'status.json'
       - 'status.schema.json'
@@ -60,6 +63,7 @@ jobs:
       - name: Validate deterministic reliability checks
         run: |
           node scripts/validate-slo.mjs
+          node scripts/validate-reliability-evidence.mjs
           ./scripts/synthetic-check.sh --dry-run
           ./scripts/runtime-check.sh
           ./scripts/gitops-rollback-check.sh
