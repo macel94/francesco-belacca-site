@@ -27,7 +27,15 @@
     && data.entries.every(validEntry);
   const formatTime = (value) => isDate(value) && value !== null
     ? `${new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(value))} UTC`
-    : 'not observed';
+    : null;
+  const formatMetadata = (entry) => {
+    const labels = [];
+    const observed = formatTime(entry.observed_at);
+    const sourceUpdated = formatTime(entry.source_updated_at);
+    if (observed) labels.push(`observed ${observed}`);
+    if (sourceUpdated) labels.push(`source updated ${sourceUpdated}`);
+    return labels.join(' · ') || 'no timestamps available';
+  };
   const stateLabel = (state) => state.replaceAll('_', ' ');
 
   const link = (reference) => {
@@ -70,7 +78,7 @@
 
       const metadata = document.createElement('p');
       metadata.className = 'evidence-entry-meta';
-      metadata.textContent = `observed ${formatTime(entry.observed_at)} · source updated ${formatTime(entry.source_updated_at)}`;
+      metadata.textContent = formatMetadata(entry);
 
       const references = document.createElement('div');
       references.className = 'evidence-entry-links';

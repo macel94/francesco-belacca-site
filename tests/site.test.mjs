@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import vm from 'node:vm';
 import test from 'node:test';
 
 const root = resolve(import.meta.dirname, '..');
@@ -200,6 +201,47 @@ test('reliability evidence ledger is sanitized, bounded, and source-linked', asy
   assert.match(renderer, /reliability-evidence\.json/);
   assert.match(validator, /source-linked, bounded/);
   assert.doesNotMatch(JSON.stringify(evidence), /token|password|private[_ -]?key|player|room[_ -]?id|127\.0\.0\.1/i);
+});
+
+test('reliability evidence ledger omits unavailable timestamp claims', async () => {
+  const renderer = await read('reliability-evidence.js');
+  const evidence = JSON.parse(await read('reliability-evidence.json'));
+  const ledger = {
+    children: [],
+    replaceChildren(...children) { this.children = children; },
+    append(...children) { this.children.push(...children); }
+  };
+  const summary = { textContent: '' };
+  const document = {
+    querySelector(selector) {
+      if (selector === '[data-evidence-ledger]') return ledger;
+      if (selector === '[data-evidence-summary]') return summary;
+      return null;
+    },
+    createElement() {
+      return {
+        className: '',
+        textContent: '',
+        children: [],
+        append(...children) { this.children.push(...children); }
+      };
+    }
+  };
+  const context = vm.createContext({
+    Date,
+    Intl,
+    document,
+    fetch: async () => ({ ok: true, json: async () => evidence })
+  });
+
+  vm.runInContext(renderer, context);
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const metadata = ledger.children.map((entry) => entry.children.find((child) => child.className === 'evidence-entry-meta').textContent);
+  assert.match(metadata[0], /^observed .* · source updated ./);
+  assert.match(metadata[2], /^source updated ./);
+  assert.equal(metadata[3], 'no timestamps available');
+  assert.doesNotMatch(metadata.join(' | '), /not observed/);
 });
 
 test('reliability SLO surface renders measured history without becoming current status', async () => {
