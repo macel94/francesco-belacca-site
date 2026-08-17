@@ -63,13 +63,14 @@ curl -fsS http://localhost:8080/health
 
 ## Branding assets
 
-[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark. It is used directly as the favicon and as the logo in the shared header on the home, reliability, status, and privacy pages. The browser-compatible derivatives are committed alongside it:
+[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark and the visible header logo. Browser tabs use the standards-compatible `favicon.ico` link, generated from that same SVG source, because it is more reliable than this complex filtered SVG in favicon contexts. The browser-compatible derivatives are committed alongside it:
 
-- `favicon.ico` — legacy multi-size favicon containing 16, 32, and 48 pixel PNG entries.
+- `favicon.ico` — the tab fallback, containing 16, 32, and 48 pixel PNG entries.
+- `icon-16.png` and `icon-32.png` — explicit modern browser-tab PNG candidates.
 - `apple-touch-icon.png` — 180×180 Apple touch icon.
 - `icon-192.png` and `icon-512.png` — installable web-app manifest icons.
 
-When the mark changes, update `favicon.svg` first and regenerate these derivatives from that source so browser fallbacks and installed app icons remain visually consistent.
+When the mark changes, update `favicon.svg` first and regenerate all derivatives from that source. Keep the `rel="icon"` ICO declaration in each page head so browser tab rendering remains reliable.
 
 ## Delivery
 
