@@ -1,5 +1,8 @@
 # francesco.belacca.com
 
+The canonical cross-repository GitOps delivery and commit-routing guide is
+[`belacca-platform/docs/gitops-delivery.md`](https://github.com/macel94/belacca-platform/blob/main/docs/gitops-delivery.md).
+
 Personal public site for Francesco Belacca: Senior Site Reliability Engineer,
 cloud engineer, and builder of reliable systems. The site also publishes a
 truthful, bounded [reliability and systems note](reliability.html) describing
@@ -83,6 +86,17 @@ its short form into the site as build metadata; this identifies the artifact but
 is not an availability measurement. Flux in the hosting cluster watches this
 repository and reconciles that immutable deployment manifest. The `latest`
 registry tag is only a convenience alias; native production never deploys it.
+
+The production path has two commits: the reviewed site source commit, then the
+workflow-generated `deploy: publish site ...` commit that records the immutable
+image tag and digest in `deploy/kustomization.yaml`. Flux normally reports that
+generated commit, while the running image/build marker identifies the source
+commit. After the generated commit lands, reconcile
+`flux-system/francesco-belacca-site` and `flux-system/portfolio`, verify the
+`portfolio/francesco-site` image/digest, rollout, `/health`, build marker, and
+public checks. Only then update the parent workspace submodule pointer if the
+workspace should track the latest deployment commit. `Signature: none` on the
+Flux child source is expected while `spec.verify` is omitted.
 
 The policy and evidence pipeline exists and is live. The durable portfolio SLO contract is [`portfolio-slo.json`](portfolio-slo.json), with the operator procedure in [`docs/portfolio-reliability-checks.md`](docs/portfolio-reliability-checks.md): one external probe is one total event, and it is good only when both `/health` and `/` return their expected successful responses. The 99% target is an internal objective, not an SLA. The probe also supports out-of-band alias and path-preserving redirect assertions.
 
