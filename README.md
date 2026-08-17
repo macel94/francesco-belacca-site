@@ -61,6 +61,16 @@ curl -fsS http://localhost:8080/health
 - No third-party fonts, runtime analytics vendors, or client-side framework. The status page has one explicit read-only dependency on the raw GitHub status artifact.
 - Self-hosted, cookie-free visitor analytics are served through the same-origin `/count` endpoint; see [`privacy.html`](privacy.html). The private dashboard is at `https://stats.belacca.com`.
 
+## Branding assets
+
+[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark. It is used directly as the favicon and as the logo in the shared header on the home, reliability, status, and privacy pages. The browser-compatible derivatives are committed alongside it:
+
+- `favicon.ico` — legacy multi-size favicon containing 16, 32, and 48 pixel PNG entries.
+- `apple-touch-icon.png` — 180×180 Apple touch icon.
+- `icon-192.png` and `icon-512.png` — installable web-app manifest icons.
+
+When the mark changes, update `favicon.svg` first and regenerate these derivatives from that source so browser fallbacks and installed app icons remain visually consistent.
+
 ## Delivery
 
 `.github/workflows/test-and-publish.yml` runs the Node test suite, builds the

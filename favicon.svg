@@ -1,10 +1,89 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
-  <title id="title">Francesco Belacca</title>
-  <desc id="desc">A compact FB signal monogram</desc>
-  <rect width="64" height="64" rx="16" fill="#030507"/>
-  <rect x="2" y="2" width="60" height="60" rx="15" fill="#21443f"/>
-  <rect x="4" y="4" width="56" height="56" rx="13" fill="#071015"/>
-  <path d="M16 48V16h18M16 32h15" fill="none" stroke="#c8ff3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M39 16v32m0-32h7c5 0 8 3 8 7.5S51 31 46 31h-7m0 0h8c5 0 8 3.5 8 8.5S52 48 47 48h-8" fill="none" stroke="#79e6d0" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="51" cy="10" r="2.5" fill="#c8ff3d"/>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background vignette: lifts the center, sinks the edges -->
+    <radialGradient id="bgGrad" cx="0.5" cy="0.42" r="0.75">
+      <stop offset="0" stop-color="#17171a"/>
+      <stop offset="0.55" stop-color="#0f0f12"/>
+      <stop offset="1" stop-color="#09090b"/>
+    </radialGradient>
+
+    <!-- Metallic face gradient for the letters (lit from top-left) -->
+    <linearGradient id="faceGrad" x1="0" y1="0" x2="0.25" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#e4e4e7"/>
+      <stop offset="1" stop-color="#9f9fa9"/>
+    </linearGradient>
+
+
+    <!-- Neon glow -->
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="9" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+
+    <filter id="softBlur" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+
+    <!-- Letter geometry, defined once, reused for every 3D layer -->
+    <g id="letters" fill="none" stroke-width="28" stroke-linecap="square" stroke-linejoin="miter">
+      <path d="M 176 152 V 360 M 176 152 H 260 M 176 256 H 240"/>
+      <path d="M 296 152 V 360 M 296 152 H 348 L 380 184 V 224 L 348 256 H 296 M 296 256 H 356 L 392 292 V 324 L 356 360 H 296"/>
+    </g>
+  </defs>
+
+  <!-- Container -->
+  <rect width="512" height="512" rx="108" fill="url(#bgGrad)"/>
+  <rect x="12" y="12" width="488" height="488" rx="96" fill="none" stroke="#27272a" stroke-width="4"/>
+  <rect width="512" height="512" rx="108" fill="url(#edgeLight)"/>
+  <rect width="512" height="512" rx="108" fill="url(#edgeShade)"/>
+  <path d="M 112 15 H 400" stroke="#ffffff" stroke-opacity="0.2" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Corner Telemetry Accents -->
+  <path d="M 64 96 H 96 M 80 80 V 112" stroke="#27272a" stroke-width="3" stroke-linecap="square"/>
+  <path d="M 416 432 H 448 M 432 416 V 448" stroke="#27272a" stroke-width="3" stroke-linecap="square"/>
+
+  <!-- Status LED: halo + glowing core + glassy specular dot -->
+  <circle cx="416" cy="96" r="22" fill="#b7f34a" opacity="0.18"/>
+  <g filter="url(#glow)">
+    <circle cx="416" cy="96" r="10" fill="#10b981"/>
+  </g>
+  <circle cx="412.5" cy="92.5" r="3" fill="#ffffff" opacity="0.85"/>
+
+  <!-- Floor shadows grounding the mark and the letters -->
+  <ellipse cx="284" cy="404" rx="180" ry="15" fill="#000000" opacity="0.45" filter="url(#softBlur)"/>
+  <ellipse cx="112" cy="394" rx="52" ry="9" fill="#000000" opacity="0.4" filter="url(#softBlur)"/>
+
+  <!-- Terminal mark: offset shadow -->
+  <g transform="translate(5 7)" opacity="0.45" fill="none" stroke="#000000" stroke-width="28" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M 96 212 L 128 248 L 96 284"/>
+    <path d="M 92 360 H 132"/>
+  </g>
+
+  <!-- Terminal mark: white base, glowing neon core, hot filament center -->
+  <path d="M 96 212 L 128 248 L 96 284" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M 92 360 H 132" fill="none" stroke="#ffffff" stroke-width="28" stroke-linecap="square"/>
+  <g filter="url(#glow)" fill="none" stroke-linecap="square" stroke-linejoin="miter">
+    <path d="M 96 212 L 128 248 L 96 284" stroke="#b7f34a" stroke-width="26"/>
+    <path d="M 92 360 H 132" stroke="#10b981" stroke-width="26"/>
+  </g>
+  <path d="M 96 212 L 128 248 L 96 284" fill="none" stroke="#eafbb8" stroke-width="7" stroke-linecap="square" stroke-linejoin="miter" opacity="0.9"/>
+  <path d="M 92 360 H 132" fill="none" stroke="#a7f3d0" stroke-width="7" stroke-linecap="square" opacity="0.9"/>
+
+  <!-- Monograms: deep-green extrusion, top-left rim light, metallic face, cast shadow -->
+  <g filter="url(#letterShadow)">
+    <use href="#letters" xlink:href="#letters" transform="translate(12 12)" stroke="#022c22"/>
+    <use href="#letters" xlink:href="#letters" transform="translate(10 10)" stroke="#033026"/>
+    <use href="#letters" xlink:href="#letters" transform="translate(8 8)" stroke="#043a2c"/>
+    <use href="#letters" xlink:href="#letters" transform="translate(6 6)" stroke="#054434"/>
+    <use href="#letters" xlink:href="#letters" transform="translate(4 4)" stroke="#064e3b"/>
+    <use href="#letters" xlink:href="#letters" transform="translate(2 2)" stroke="#065f46"/>
+    <use href="#letters" xlink:href="#letters" transform="translate(-2 -2)" stroke="#ffffff" stroke-opacity="0.5"/>
+    <use href="#letters" xlink:href="#letters" stroke="url(#faceGrad)"/>
+  </g>
 </svg>

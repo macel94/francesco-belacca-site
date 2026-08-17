@@ -357,6 +357,19 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/reliability\.html<\/loc>/);
 });
 
+test('the supplied canonical mark is used across public branding surfaces', async () => {
+  const svg = await read('favicon.svg');
+  assert.match(svg, /viewBox="0 0 512 512"/);
+  assert.match(svg, /id="bgGrad"/);
+  for (const document of ['index.html', 'privacy.html', 'reliability.html', 'status.html']) {
+    const html = await read(document);
+    assert.match(html, /<img class="brand-mark" src="\/favicon\.svg" alt="" width="40" height="40" \/>/);
+    assert.doesNotMatch(html, /<span class="brand-mark"/);
+  }
+  const css = await read('styles.css');
+  assert.match(css, /\.brand-mark \{ display: block;[\s\S]*?object-fit: contain;/);
+});
+
 test('favicon binaries use browser-safe square dimensions', async () => {
   const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   const pngDimensions = async (file, expected) => {
