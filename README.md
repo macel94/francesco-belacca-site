@@ -66,15 +66,16 @@ curl -fsS http://localhost:8080/health
 
 ## Branding assets
 
-[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark and the visible header logo. Browser tabs use the simple, high-contrast [`favicon-tab.svg`](favicon-tab.svg) first, with the standards-compatible `favicon.ico` and PNG links as fallbacks. The complex filtered header mark is kept out of the tab icon path because it is not reliable at favicon sizes. The browser-compatible derivatives are committed alongside it:
+[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark and the visible header logo. Browser tabs use the dedicated, opaque 32×32 [`favicon-tab.png`](favicon-tab.png) declaration. Chromium stores the legacy `/favicon.ico` fallback for an origin even when SVG and ICO candidates are declared together, so the tab path intentionally exposes one PNG candidate only. The complex filtered header mark is kept out of the tab icon path because it is not reliable at favicon sizes. The browser-compatible derivatives are committed alongside it:
 
-- `favicon-tab.svg` — the primary high-contrast browser-tab mark.
-- `favicon.ico` — the tab fallback, containing 16, 32, and 48 pixel PNG entries.
-- `icon-16.png` and `icon-32.png` — explicit modern browser-tab PNG candidates.
+- `favicon-tab.png` — the opaque 32×32 browser-tab mark used by the HTML declaration.
+- `favicon-tab.svg` — the editable high-contrast source for the tab mark.
+- `favicon.ico` — the automatic root fallback, containing 16, 32, and 48 pixel PNG entries.
+- `icon-16.png` and `icon-32.png` — existing install/browser derivatives.
 - `apple-touch-icon.png` — 180×180 Apple touch icon.
 - `icon-192.png` and `icon-512.png` — installable web-app manifest icons.
 
-When the mark changes, update `favicon.svg` first and regenerate all derivatives from that source; update `favicon-tab.svg` when the tab-specific geometry needs to change. Keep the SVG and `rel="icon"` ICO declarations in each page head so browser tab rendering remains reliable.
+When the mark changes, update `favicon.svg` first and regenerate the visible-brand derivatives; update `favicon-tab.svg` and regenerate `favicon-tab.png` when the tab-specific geometry needs to change. Keep the single PNG `rel="icon"` declaration in each page head so browser tab rendering remains reliable.
 
 ## Delivery
 

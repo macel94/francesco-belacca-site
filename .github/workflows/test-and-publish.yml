@@ -26,6 +26,7 @@ on:
       - 'privacy.html'
       - 'favicon.svg'
       - 'favicon-tab.svg'
+      - 'favicon-tab.png'
       - 'favicon.ico'
       - 'icon-16.png'
       - 'icon-32.png'

@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.title="Francesco Belacca site" \
       org.opencontainers.image.description="Static personal site served by Caddy" \
       org.opencontainers.image.licenses="MIT"
 
-COPY index.html reliability.html reliability.js reliability-evidence.js reliability-evidence.json reliability-evidence.schema.json status.html privacy.html status.json status.schema.json status-contract.md portfolio-slo.json portfolio-slo.schema.json styles.css app.js status.js count.js favicon.svg favicon-tab.svg favicon.ico icon-16.png icon-32.png apple-touch-icon.png icon-192.png icon-512.png site.webmanifest robots.txt llms.txt sitemap.xml /srv/
+COPY index.html reliability.html reliability.js reliability-evidence.js reliability-evidence.json reliability-evidence.schema.json status.html privacy.html status.json status.schema.json status-contract.md portfolio-slo.json portfolio-slo.schema.json styles.css app.js status.js count.js favicon.svg favicon-tab.svg favicon-tab.png favicon.ico icon-16.png icon-32.png apple-touch-icon.png icon-192.png icon-512.png site.webmanifest robots.txt llms.txt sitemap.xml /srv/
 COPY Caddyfile /etc/caddy/Caddyfile
 RUN build_sha_short="$(printf '%s' "${BUILD_SHA}" | cut -c1-7)" \
     && build_run_url="https://github.com/macel94/francesco-belacca-site/actions" \

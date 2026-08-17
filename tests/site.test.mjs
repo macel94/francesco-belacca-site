@@ -339,16 +339,17 @@ test('site discovery assets are linked and shipped', async () => {
   const privacy = await read('privacy.html');
   for (const document of ['index.html', 'privacy.html', 'reliability.html', 'status.html']) {
     const documentHtml = await read(document);
-    assert.match(documentHtml, /<link rel="icon" href="\/favicon-tab\.svg" type="image\/svg\+xml" \/>/);
-    assert.match(documentHtml, /<link rel="icon" href="\/favicon\.ico" type="image\/x-icon" sizes="16x16 32x32 48x48" \/>/);
-    assert.match(documentHtml, /<link rel="icon" href="\/icon-32\.png" type="image\/png" sizes="32x32" \/>/);
-    assert.match(documentHtml, /<link rel="icon" href="\/icon-16\.png" type="image\/png" sizes="16x16" \/>/);
+    assert.match(documentHtml, /<link rel="icon" href="\/favicon-tab\.png" type="image\/png" sizes="32x32" \/>/);
+    assert.doesNotMatch(documentHtml, /href="\/favicon-tab\.svg"/);
+    assert.doesNotMatch(documentHtml, /href="\/favicon\.ico"/);
+    assert.doesNotMatch(documentHtml, /href="\/icon-32\.png"/);
+    assert.doesNotMatch(documentHtml, /href="\/icon-16\.png"/);
     assert.doesNotMatch(documentHtml, /rel="alternate icon"/);
     assert.doesNotMatch(documentHtml, /<link rel="icon" href="\/favicon\.svg"/);
     assert.match(documentHtml, /rel="apple-touch-icon" href="\/apple-touch-icon\.png" sizes="180x180"/);
   }
   assert.match(html, /href="\/site\.webmanifest"/);
-  for (const asset of ['index.html', 'reliability.html', 'reliability.js', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon-tab.svg', 'favicon.ico', 'icon-16.png', 'icon-32.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
+  for (const asset of ['index.html', 'reliability.html', 'reliability.js', 'privacy.html', 'styles.css', 'app.js', 'count.js', 'favicon.svg', 'favicon-tab.svg', 'favicon-tab.png', 'favicon.ico', 'icon-16.png', 'icon-32.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'site.webmanifest', 'robots.txt', 'llms.txt', 'sitemap.xml']) assert.match(dockerfile, new RegExp(asset.replace('.', '\\.'), 'u'));
   assert.match(dockerfile, /ARG BUILD_SHA=dev/);
   assert.match(dockerfile, /__BUILD_SHA_SHORT__/);
   assert.match(manifest, /"start_url": "\/"/);
@@ -369,9 +370,13 @@ test('site discovery assets are linked and shipped', async () => {
 test('the supplied canonical mark is used across public branding surfaces', async () => {
   const svg = await read('favicon.svg');
   const tabSvg = await read('favicon-tab.svg');
+  const tabPng = await readBytes('favicon-tab.png');
   assert.match(svg, /viewBox="0 0 512 512"/);
   assert.match(tabSvg, /viewBox="0 0 64 64"/);
   assert.match(tabSvg, /#b7f34a/);
+  assert.deepEqual(tabPng.subarray(0, 8), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
+  assert.equal(tabPng.readUInt32BE(16), 32);
+  assert.equal(tabPng.readUInt32BE(20), 32);
   assert.match(svg, /id="bgGrad"/);
   const definedIds = new Set([...svg.matchAll(/id="([^"]+)"/g)].map(([_, id]) => id));
   const referencedIds = [...svg.matchAll(/(?:url\(#|href="#|xlink:href="#)([^)" ]+)/g)].map(([_, id]) => id);
@@ -389,8 +394,8 @@ test('the supplied canonical mark is used across public branding surfaces', asyn
   assert.doesNotMatch(brandRule, /box-shadow/);
   for (const document of ['index.html', 'privacy.html', 'reliability.html', 'status.html']) {
     const html = await read(document);
-    assert.match(html, /<link rel="icon" href="\/favicon-tab\.svg" type="image\/svg\+xml" \/>/);
-    assert.match(html, /<link rel="icon" href="\/favicon\.ico" type="image\/x-icon" sizes="16x16 32x32 48x48" \/>/);
+    assert.match(html, /<link rel="icon" href="\/favicon-tab\.png" type="image\/png" sizes="32x32" \/>/);
+    assert.doesNotMatch(html, /href="\/favicon\.ico"/);
     assert.match(html, /<img class="brand-mark" src="\/favicon\.svg"/);
   }
 });
