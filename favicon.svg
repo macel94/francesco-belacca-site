@@ -14,6 +14,22 @@
       <stop offset="1" stop-color="#9f9fa9"/>
     </linearGradient>
 
+    <!-- Subtle edge lighting and shade for the container -->
+    <linearGradient id="edgeLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="0.35" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="edgeShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="0.68" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.22"/>
+    </linearGradient>
+
+    <!-- Cast shadow for the extruded monogram -->
+    <filter id="letterShadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="3" dy="5" stdDeviation="3" flood-color="#000000" flood-opacity="0.42"/>
+    </filter>
 
     <!-- Neon glow -->
     <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">

@@ -50,6 +50,10 @@ test('analytics stays first-party and cookie-free', async () => {
   assert.match(caddy, /header_up Host stats\.belacca\.com/);
   assert.match(caddy, /preserves and appends X-Forwarded-For by default/);
   assert.match(caddy, /header_up X-Real-IP \{remote_host\}/);
+  assert.match(caddy, /header_down -Content-Security-Policy/);
+  assert.match(caddy, /header_down -X-Frame-Options/);
+  assert.match(caddy, /header_down -X-Content-Type-Options/);
+  assert.match(caddy, /flush_interval -1/);
   assert.match(caddy, /@countjs path \/count\.js/);
 });
 
@@ -361,13 +365,20 @@ test('the supplied canonical mark is used across public branding surfaces', asyn
   const svg = await read('favicon.svg');
   assert.match(svg, /viewBox="0 0 512 512"/);
   assert.match(svg, /id="bgGrad"/);
+  const definedIds = new Set([...svg.matchAll(/id="([^"]+)"/g)].map(([_, id]) => id));
+  const referencedIds = [...svg.matchAll(/(?:url\(#|href="#|xlink:href="#)([^)" ]+)/g)].map(([_, id]) => id);
+  assert.deepEqual(referencedIds.filter((id) => !definedIds.has(id)), []);
   for (const document of ['index.html', 'privacy.html', 'reliability.html', 'status.html']) {
     const html = await read(document);
     assert.match(html, /<img class="brand-mark" src="\/favicon\.svg" alt="" width="40" height="40" \/>/);
     assert.doesNotMatch(html, /<span class="brand-mark"/);
   }
   const css = await read('styles.css');
-  assert.match(css, /\.brand-mark \{ display: block;[\s\S]*?object-fit: contain;/);
+  const brandRule = css.match(/\.brand-mark \{[^}]+\}/)?.[0];
+  assert.ok(brandRule);
+  assert.match(brandRule, /display: block/);
+  assert.match(brandRule, /object-fit: contain/);
+  assert.doesNotMatch(brandRule, /box-shadow/);
 });
 
 test('favicon binaries use browser-safe square dimensions', async () => {

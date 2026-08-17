@@ -53,6 +53,12 @@
             reverse_proxy goatcounter.analytics.svc.cluster.local {
                 header_up Host stats.belacca.com
                 header_up X-Real-IP {remote_host}
+                # GoatCounter supplies its own page security headers. Strip
+                # those upstream values so they are not duplicated or merged
+                # with the portfolio's canonical response policy.
+                header_down -Content-Security-Policy
+                header_down -X-Frame-Options
+                header_down -X-Content-Type-Options
                 flush_interval -1
             }
         }
