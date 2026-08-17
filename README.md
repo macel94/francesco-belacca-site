@@ -66,14 +66,15 @@ curl -fsS http://localhost:8080/health
 
 ## Branding assets
 
-[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark and the visible header logo. Browser tabs use the standards-compatible `favicon.ico` link, generated from that same SVG source, because it is more reliable than this complex filtered SVG in favicon contexts. The browser-compatible derivatives are committed alongside it:
+[`favicon.svg`](favicon.svg) is the canonical, committed source for the site mark and the visible header logo. Browser tabs use the simple, high-contrast [`favicon-tab.svg`](favicon-tab.svg) first, with the standards-compatible `favicon.ico` and PNG links as fallbacks. The complex filtered header mark is kept out of the tab icon path because it is not reliable at favicon sizes. The browser-compatible derivatives are committed alongside it:
 
+- `favicon-tab.svg` — the primary high-contrast browser-tab mark.
 - `favicon.ico` — the tab fallback, containing 16, 32, and 48 pixel PNG entries.
 - `icon-16.png` and `icon-32.png` — explicit modern browser-tab PNG candidates.
 - `apple-touch-icon.png` — 180×180 Apple touch icon.
 - `icon-192.png` and `icon-512.png` — installable web-app manifest icons.
 
-When the mark changes, update `favicon.svg` first and regenerate all derivatives from that source. Keep the `rel="icon"` ICO declaration in each page head so browser tab rendering remains reliable.
+When the mark changes, update `favicon.svg` first and regenerate all derivatives from that source; update `favicon-tab.svg` when the tab-specific geometry needs to change. Keep the SVG and `rel="icon"` ICO declarations in each page head so browser tab rendering remains reliable.
 
 ## Delivery
 
