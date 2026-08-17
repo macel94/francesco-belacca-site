@@ -25,7 +25,6 @@ on:
       - 'count.js'
       - 'privacy.html'
       - 'favicon.svg'
-      - 'favicon-tab.svg'
       - 'favicon-tab.png'
       - 'favicon.ico'
       - 'icon-16.png'
