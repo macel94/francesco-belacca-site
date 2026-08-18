@@ -324,8 +324,10 @@ test('work section features the requested projects', async () => {
   assert.match(html, /href="https:\/\/github\.com\/macel94\/eu-azfoundry-scout"/);
   assert.match(html, /EU Azure Foundry Scout/);
   assert.match(html, /bounded aggregate telemetry/);
-  assert.match(html, /href="https:\/\/github\.com\/macel94\/postquantumdotnettest"/);
-  assert.match(html, /Post-Quantum \.NET/);
+  assert.match(html, /href="https:\/\/github\.com\/macel94\/postquantumtests"/);
+  assert.match(html, /Post-Quantum TLS Benchmarks/);
+  assert.match(html, /Cross-language benchmarks comparing post-quantum and classical key-exchange costs in \.NET and Go/);
+  assert.match(html, /X25519MLKEM768/);
   assert.doesNotMatch(html, /github\.com\/macel94\/azcockpit/);
   assert.doesNotMatch(html, /Azure Cockpit/);
 });
@@ -361,7 +363,9 @@ test('site discovery assets are linked and shipped', async () => {
   assert.match(robots, /Sitemap: https:\/\/francesco\.belacca\.com\/sitemap\.xml/);
   assert.match(llms, /^# Francesco Belacca/m);
   assert.match(llms, /https:\/\/github\.com\/macel94\/eu-azfoundry-scout/);
-  assert.match(llms, /https:\/\/github\.com\/macel94\/postquantumdotnettest/);
+  assert.match(llms, /https:\/\/github\.com\/macel94\/postquantumtests/);
+  assert.match(llms, /Post-Quantum TLS Benchmarks/);
+  assert.doesNotMatch(llms, /postquantumdotnettest/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/privacy\.html<\/loc>/);
   assert.match(sitemap, /<loc>https:\/\/francesco\.belacca\.com\/reliability\.html<\/loc>/);
