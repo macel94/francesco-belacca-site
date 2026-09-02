@@ -24,11 +24,11 @@
       "id": "backup-retention",
       "name": "Backup retention history",
       "state": "outstanding",
-      "summary": "The evidence artifact still records 35 daily retention points, 12 monthly retention points, and full application rehearsal as remaining evidence.",
+      "summary": "The 2026-09-02 cost relaxation dropped the 12-month monthly retention requirement; 14 daily retention points and full application rehearsal remain outstanding.",
       "observed_at": "2026-08-15T11:44:32Z",
-      "source_updated_at": "2026-08-15T11:50:26Z",
+      "source_updated_at": "2026-09-02T21:00:00Z",
       "source_references": [
-        "https://github.com/macel94/belacca-gitops/blob/main/docs/evidence/aws-native-backup-production-20260815.json",
+        "https://github.com/macel94/belacca-gitops/blob/main/docs/evidence/aws-native-backup-retention-relaxation-20260902.json",
         "https://github.com/macel94/belacca-gitops/blob/main/docs/BACKUP-RUNBOOK.md"
       ],
       "limitations": [
