@@ -3,18 +3,18 @@
   "@id": "https://github.com/macel94/francesco-belacca-site/blob/main/security/site.openvex.json",
   "author": "Francesco Belacca",
   "role": "Application security decision",
-  "timestamp": "2026-08-13T00:00:00Z",
-  "version": 1,
+  "timestamp": "2026-10-21T23:00:00Z",
+  "version": 2,
   "tooling": "https://trivy.dev/latest/docs/supply-chain/vex/file/",
   "statements": [
     {
       "vulnerability": { "name": "GO-2026-5932" },
       "products": [
-        { "@id": "pkg:golang/golang.org/x/crypto@v0.52.0" }
+        { "@id": "pkg:golang/golang.org/x/crypto@v0.57.0" }
       ],
       "status": "not_affected",
       "justification": "vulnerable_code_not_present",
-      "impact_statement": "The Caddy v2.11.4 binary contains x/crypto SSH/TLS packages but no golang.org/x/crypto/openpgp symbols; the vulnerable OpenPGP code is not present in the executed binary."
+      "impact_statement": "The reviewed linux/amd64 CGO-disabled standard Caddy 2.11.7 production import graph contains x/crypto v0.57.0 primitives but excludes every golang.org/x/crypto/openpgp package. Docker builds fail if that package enters the graph. See security/openpgp-review.md for locked inputs and scan evidence. The legacy version scope is retired; no other vulnerability or package version is authorized. This is a binary-specific absence assessment, not a fix for the unmaintained OpenPGP package."
     }
   ]
 }
