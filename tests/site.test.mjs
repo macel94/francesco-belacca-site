@@ -597,7 +597,8 @@ test('synthetic and rollback validators are fail-closed and deterministic', asyn
 test('container serves a health endpoint with hardened headers and cache behavior', async () => {
   const dockerfile = await read('Dockerfile');
   const caddy = await read('Caddyfile');
-  assert.match(dockerfile, /docker\.io\/library\/caddy:2\.11\.4-alpine@sha256:[0-9a-f]{64}/);
+  assert.match(dockerfile, /docker\.io\/library\/caddy:2\.11\.7-alpine@sha256:[0-9a-f]{64}/);
+  assert.match(dockerfile, /RUN apk upgrade --no-cache/);
   assert.match(caddy, /@health path \/health/);
   assert.match(caddy, /@homepage path \/\s+header @homepage Cache-Control "no-cache, must-revalidate"/);
   assert.match(caddy, /@reliability path \/reliability\.html/);

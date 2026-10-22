@@ -38,6 +38,7 @@ on:
       - 'sitemap.xml'
       - 'Caddyfile'
       - 'Dockerfile'
+      - 'build/caddy/**'
       - '.dockerignore'
       - 'package.json'
       - 'tests/**'

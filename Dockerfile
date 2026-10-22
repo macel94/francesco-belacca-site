@@ -1,4 +1,15 @@
-FROM docker.io/library/caddy:2.11.4-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
+# Rebuild the same standard Caddy release with the fixed Go/HTTP2 stack.
+FROM docker.io/library/golang:1.26.10-alpine@sha256:9ce231b28998b32e116927c61aa5c406183061d4f3f2d61b292c88e7f6bdf7ca AS caddy-build
+ENV GOTOOLCHAIN=local
+WORKDIR /src
+COPY build/caddy/go.mod build/caddy/go.sum ./
+RUN go mod download
+COPY build/caddy/main.go ./
+RUN CGO_ENABLED=0 go list -deps . > /tmp/caddy-deps.txt \
+    && ! grep -Eq '^golang.org/x/crypto/openpgp(/|$)' /tmp/caddy-deps.txt
+RUN CGO_ENABLED=0 go build -p=1 -trimpath -ldflags="-s -w" -o /out/caddy .
+
+FROM docker.io/library/caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
 
 ARG BUILD_SHA=dev
 ARG BUILD_RUN_ID=local
@@ -20,10 +31,15 @@ RUN build_sha_short="$(printf '%s' "${BUILD_SHA}" | cut -c1-7)" \
       /srv/reliability.html \
       /srv/status.html
 
+# Refresh OS and CA security fixes before publishing the immutable image.
+RUN apk upgrade --no-cache
+
 # The upstream image grants cap_net_bind_service to Caddy. This workload
 # listens on 8080 and runs with allowPrivilegeEscalation=false, so retaining
 # that file capability makes hardened Kubernetes runtimes reject execve.
 RUN setcap -r /usr/bin/caddy
+COPY --from=caddy-build /out/caddy /usr/bin/caddy
+RUN capabilities="$(getcap /usr/bin/caddy)" && test -z "$capabilities"
 
 EXPOSE 8080
 
