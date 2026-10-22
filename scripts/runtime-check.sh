@@ -77,8 +77,9 @@ for _ in {1..20}; do
   curl -fsS "http://127.0.0.1:$port/health" >/dev/null && break
   sleep 1
 done
-curl -fsS "http://127.0.0.1:$port/health" | grep -Fxq ok
-curl -fsS "http://127.0.0.1:$port/" | grep -Eiq '<!doctype html'
+# Do not use grep -q: early pipe closure can make curl exit 23 under pipefail.
+curl -fsS "http://127.0.0.1:$port/health" | grep -Fx ok >/dev/null
+curl -fsS "http://127.0.0.1:$port/" | grep -Ei '<!doctype html' >/dev/null
 # The fixture deliberately returns 503 for analytics. This is a dependency
 # failure, not a portfolio journey failure.
 count_status="$(curl -sS --max-time 3 -o /dev/null -w '%{http_code}' "http://127.0.0.1:$port/count")"
@@ -90,6 +91,6 @@ count_status="$(curl -sS --max-time 3 -o /dev/null -w '%{http_code}' "http://127
   docker logs "$site" >&2 || true
   exit 1
 }
-curl -fsS "http://127.0.0.1:$port/health" | grep -Fxq ok
-curl -fsS "http://127.0.0.1:$port/" | grep -Eiq '<!doctype html'
+curl -fsS "http://127.0.0.1:$port/health" | grep -Fx ok >/dev/null
+curl -fsS "http://127.0.0.1:$port/" | grep -Ei '<!doctype html' >/dev/null
 printf 'dependency degradation check passed: analytics failure did not break portfolio availability\n'
