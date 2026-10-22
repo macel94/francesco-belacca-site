@@ -58,7 +58,7 @@ check_headers() {
   trap 'rm -f "$headers"' RETURN
   status="$(curl "${curl_args[@]}" --dump-header "$headers" --output "$output" --write-out '%{http_code}' "$url")"
   [[ "$status" == "$expected_status" ]] || { echo "$url returned HTTP $status (expected $expected_status)" >&2; return 1; }
-  cache="$(awk 'BEGIN{IGNORECASE=1} /^Cache-Control:/{sub("\r$", ""); sub("^[^:]*:[[:space:]]*", ""); print}' "$headers" | tail -1)"
+  cache="$(awk 'tolower($0) ~ /^cache-control:/{sub("\r$", ""); sub("^[^:]*:[[:space:]]*", ""); print}' "$headers" | tail -1)"
   [[ "$cache" == *"$expected_cache"* ]] || { echo "$url has Cache-Control '$cache' (expected '$expected_cache')" >&2; return 1; }
 }
 
