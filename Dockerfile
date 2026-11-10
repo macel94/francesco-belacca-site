@@ -1,5 +1,5 @@
 # Rebuild the same standard Caddy release with the fixed Go/HTTP2 stack.
-FROM docker.io/library/golang:1.27.3-alpine@sha256:d200d2dd76b03a99b52651fd1325aff7dcd35422c35c01bac56571b0507f3deb AS caddy-build
+FROM docker.io/library/golang:1.27.3-alpine@sha256:fa3d596898d9f126af7c01d14ee7597bab3f39cccf392ef36b69fe77cd681f18 AS caddy-build
 ENV GOTOOLCHAIN=local
 WORKDIR /src
 COPY build/caddy/go.mod build/caddy/go.sum ./
@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 go list -deps . > /tmp/caddy-deps.txt \
     && ! grep -Eq '^golang.org/x/crypto/openpgp(/|$)' /tmp/caddy-deps.txt
 RUN CGO_ENABLED=0 go build -p=1 -trimpath -ldflags="-s -w" -o /out/caddy .
 
-FROM docker.io/library/caddy:2.11.7-alpine@sha256:e70b164da81ef698b3ad19af799ea6086ce6d9e48ed4079eb9fe26f6fbf14ee5
+FROM docker.io/library/caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
 
 ARG BUILD_SHA=dev
 ARG BUILD_RUN_ID=local
